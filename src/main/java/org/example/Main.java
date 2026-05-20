@@ -2,54 +2,59 @@ package org.example;
 
 import org.example.lexico.AnalizadorLexico;
 import org.example.lexico.Tablatokens;
+import org.example.sintactico.AnalizadorSintactico;
+import org.example.sintactico.ArbolDerivacion;
+import org.example.sintactico.ErrorSintactico;
 
-// Punto de entrada del programa
 public class Main {
 
     public static void main(String[] args) {
+        String[] pruebas = {
+                "The cat runs quickly in the house.",
+                "She is a beautiful and happy girl.",
+                "They have good books at school.",
+                "runs The house in cat."
+        };
 
-        // Texto de prueba en inglés
-        String textoPrueba = "The cat runs quickly in the house.\n" +
-                "She is a beautiful and happy girl.\n" +
-                "They have good books at school.";
-
-        // Dirección de traducción: "en-es" (inglés a español)
         String direccion = "en-es";
 
-        System.out.println("══════════════════════════════════════════════════════");
-        System.out.println("  ELLIX — COMPILER TRANSLATOR");
-        System.out.println("  Análisis Léxico");
-        System.out.println("══════════════════════════════════════════════════════");
-        System.out.println("  Dirección : " + direccion);
-        System.out.println("  Texto     :\n");
-        System.out.println(textoPrueba);
-        System.out.println();
+        for (String texto : pruebas) {
+            System.out.println("\n╔══════════════════════════════════════════════════════╗");
+            System.out.println("  TEXTO: " + texto);
+            System.out.println("╚══════════════════════════════════════════════════════╝");
 
-        // Crea el analizador léxico
-        AnalizadorLexico lexico = new AnalizadorLexico(direccion);
+            AnalizadorLexico lexico = new AnalizadorLexico(direccion);
+            lexico.analizar(texto);
 
-        // Ejecuta el análisis sobre el texto
-        lexico.analizar(textoPrueba);
+            Tablatokens tabla = new Tablatokens(lexico.getTokens(), lexico.getErrores());
+            tabla.imprimirTablaTokens();
+            tabla.imprimirTablaErrores();
+            System.out.println("  RESUMEN LÉXICO: " + tabla.obtenerResumen());
 
-        // Crea la tabla con los resultados del análisis
-        Tablatokens tabla = new Tablatokens(lexico.getTokens(), lexico.getErrores());
+            if (!lexico.esExitoso()) {
+                System.out.println("  ✗ Análisis léxico fallido. No se continúa.\n");
+                continue;
+            }
 
-        // Imprime la tabla de tokens en consola
-        tabla.imprimirTablaTokens();
+            System.out.println("  ✓ Análisis léxico exitoso.\n");
 
-        // Imprime la tabla de errores léxicos
-        tabla.imprimirTablaErrores();
+            AnalizadorSintactico sintactico = new AnalizadorSintactico();
+            sintactico.analizar(lexico.getTokens());
 
-        // Muestra el resumen final
-        System.out.println("  RESUMEN: " + tabla.obtenerResumen());
-        System.out.println();
+            if (!sintactico.esExitoso()) {
+                System.out.println("  ERRORES SINTÁCTICOS:");
+                for (ErrorSintactico e : sintactico.getErrores()) {
+                    System.out.println("  " + e.toString());
+                }
+                System.out.println("  ✗ Análisis sintáctico fallido. No se genera árbol.\n");
+                continue;
+            }
 
-        if (tabla.sinErrores()) {
-            System.out.println("  ✓ Análisis léxico exitoso. Listo para análisis sintáctico.");
-        } else {
-            System.out.println("  ✗ Se encontraron errores léxicos. No se puede continuar.");
+            System.out.println("  ✓ Análisis sintáctico exitoso.\n");
+
+            ArbolDerivacion arbol = new ArbolDerivacion();
+            arbol.construir(lexico.getTokens());
+            arbol.imprimir();
         }
-
-        System.out.println("══════════════════════════════════════════════════════");
     }
 }
