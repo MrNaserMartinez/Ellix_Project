@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- ── CABECERA ── -->
 <header class="header">
     <div class="header-left">
         <span class="logo-icon">⬡</span>
@@ -17,7 +16,6 @@
         <span class="logo-sub">Compiler Translator</span>
     </div>
     <div class="header-right">
-        <!-- Selector de dirección de traducción -->
         <div class="lang-selector">
             <button class="lang-btn active" id="btn-en-es" onclick="setDirection('en-es')">EN → ES</button>
             <button class="lang-btn" id="btn-es-en" onclick="setDirection('es-en')">ES → EN</button>
@@ -29,10 +27,8 @@
     </div>
 </header>
 
-<!-- ── ÁREA PRINCIPAL: DOS PANELES ── -->
 <main class="main-area">
 
-    <!-- Panel Izquierdo: Entrada -->
     <section class="panel panel-input">
         <div class="panel-header">
             <span class="panel-label" id="label-input">Inglés</span>
@@ -53,14 +49,12 @@
         </div>
     </section>
 
-    <!-- Divisor central -->
     <div class="divider">
         <div class="divider-line"></div>
         <span class="divider-icon">⇄</span>
         <div class="divider-line"></div>
     </div>
 
-    <!-- Panel Derecho: Traducción -->
     <section class="panel panel-output">
         <div class="panel-header">
             <span class="panel-label" id="label-output">Español</span>
@@ -78,18 +72,16 @@
 
 </main>
 
-<!-- ── SECCIÓN DE TABLAS (Tokens + Errores) ── -->
 <section class="tables-section" id="tablesSection" style="display:none">
 
-    <!-- Tabs para cambiar entre tablas -->
     <div class="tabs">
         <button class="tab active" onclick="mostrarTab('tokens')">Tabla de Tokens</button>
-        <button class="tab" onclick="mostrarTab('errores')">Tabla de Errores</button>
+        <button class="tab"        onclick="mostrarTab('arbol')">Árbol de Derivación</button>
+        <button class="tab"        onclick="mostrarTab('errores')">Tabla de Errores</button>
     </div>
 
-    <!-- Tabla de Tokens -->
     <div id="tab-tokens" class="tab-content">
-        <table class="data-table" id="tokensTable">
+        <table class="data-table">
             <thead>
             <tr>
                 <th>#</th>
@@ -104,9 +96,12 @@
         </table>
     </div>
 
-    <!-- Tabla de Errores -->
+    <div id="tab-arbol" class="tab-content" style="display:none">
+        <div id="arbolContainer" class="arbol-container"></div>
+    </div>
+
     <div id="tab-errores" class="tab-content" style="display:none">
-        <table class="data-table" id="erroresTable">
+        <table class="data-table">
             <thead>
             <tr>
                 <th>#</th>
@@ -120,14 +115,8 @@
             <tbody id="erroresBody"></tbody>
         </table>
     </div>
-
 </section>
-
-<!-- ── NOTIFICACIÓN TOAST ── -->
 <div class="toast" id="toast"></div>
-
-
-
 <script src="app.js"></script>
 </body>
 </html>
