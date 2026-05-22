@@ -493,6 +493,7 @@ body {
 }
 
 
+
 /* ══════════════════════════
    ÁRBOL DE DERIVACIÓN
    ══════════════════════════ */
@@ -500,23 +501,33 @@ body {
 .arbol-controles {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
     padding: 10px 16px;
     background: var(--cream-dark);
     border-bottom: 1px solid var(--sand);
     flex-wrap: wrap;
+    gap: 10px;
+}
+
+.arbol-zoom-grupo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .arbol-btn {
     background: var(--warm-white);
     border: 1px solid var(--sand-dark);
     color: var(--brown-dark);
-    padding: 4px 14px;
+    width: 32px;
+    height: 32px;
     border-radius: 6px;
-    font-family: var(--font-body);
-    font-size: 0.82rem;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: background 0.15s, border-color 0.15s;
 }
 
@@ -525,30 +536,43 @@ body {
     border-color: var(--brown-light);
 }
 
-/* Leyenda de colores */
+.arbol-btn-reset {
+    width: auto;
+    padding: 0 12px;
+    font-size: 0.82rem;
+}
+
+.arbol-zoom-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--brown-light);
+    min-width: 38px;
+    text-align: center;
+}
+
 .arbol-leyenda {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-left: auto;
+    flex-wrap: wrap;
 }
 
 .arbol-leyenda-item {
     font-size: 0.7rem;
     font-weight: 500;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 20px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
 }
 
-/* Wrapper del SVG: área con scroll y arrastre */
+/* Área principal del SVG */
 .arbol-svg-wrapper {
     overflow: auto;
-    max-height: 340px;
+    height: 420px;
     cursor: grab;
-    padding: 16px;
-    background: var(--cream);
+    background: #F8F4EE;
     position: relative;
+    user-select: none;
 }
 
 .arbol-svg-wrapper:active {
@@ -558,5 +582,5 @@ body {
 #arbolSvg {
     display: block;
     transform-origin: top left;
-    transition: transform 0.15s ease;
+    transition: transform 0.12s ease;
 }

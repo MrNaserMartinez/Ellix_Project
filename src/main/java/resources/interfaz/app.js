@@ -1,5 +1,8 @@
+// ══════════════════════════════════════════════════════
 //  app.js — Ellix Compiler Translator
-
+//  Integración completa: léxico + sintáctico + semántico
+//  La síntesis (traducción real) será implementada por el Programador 3
+// ══════════════════════════════════════════════════════
 
 let direccionActual = 'en-es';
 
@@ -214,183 +217,191 @@ function llenarTablaErrores(errores) {
     });
 }
 
-// Manejo del arbol de derivación intuitivo
+// ══════════════════════════════════════════════════════
+//  SECCIÓN 5 — ÁRBOL DE DERIVACIÓN (visual interactivo)
+// ══════════════════════════════════════════════════════
 
-// Colores por tipo de nodo
 var COLORES_NODO = {
-    'programa':      { fondo: '#3E2A14', texto: '#FAF7F2' },
-    'oracion':       { fondo: '#6B4F2F', texto: '#FAF7F2' },
-    'sujeto':        { fondo: '#8B5E3C', texto: '#FAF7F2' },
-    'predicado':     { fondo: '#8B5E3C', texto: '#FAF7F2' },
-    'frase_nominal': { fondo: '#C4AE84', texto: '#3E2A14' },
-    'frase_verbal':  { fondo: '#C4AE84', texto: '#3E2A14' },
-    'frase_prep':    { fondo: '#D9C9A8', texto: '#3E2A14' },
-    'frase_adj':     { fondo: '#D9C9A8', texto: '#3E2A14' },
-    'terminal':      { fondo: '#FAF7F2', texto: '#3E2A14' }
+    'programa':      { fondo: '#3E2A14', texto: '#FAF7F2', borde: '#3E2A14' },
+    'oracion':       { fondo: '#5C3D1E', texto: '#FAF7F2', borde: '#5C3D1E' },
+    'sujeto':        { fondo: '#8B5E3C', texto: '#FAF7F2', borde: '#6B4426' },
+    'predicado':     { fondo: '#8B5E3C', texto: '#FAF7F2', borde: '#6B4426' },
+    'frase_nominal': { fondo: '#BFA880', texto: '#3E2A14', borde: '#9C7E5A' },
+    'frase_verbal':  { fondo: '#BFA880', texto: '#3E2A14', borde: '#9C7E5A' },
+    'frase_prep':    { fondo: '#D4C09A', texto: '#3E2A14', borde: '#B8985A' },
+    'frase_adj':     { fondo: '#D4C09A', texto: '#3E2A14', borde: '#B8985A' },
+    'terminal':      { fondo: '#FFFFFF', texto: '#3E2A14', borde: '#C4AE84' }
 };
 
-var escalaArbol    = 1;
-var offsetX        = 0;
-var offsetY        = 0;
-var arrastrando    = false;
-var ultimoX        = 0;
-var ultimoY        = 0;
+var escalaArbol = 1;
+var arrastrandoArbol = false;
 
 function renderizarArbol(raiz) {
     var contenedor = document.getElementById('arbolContainer');
     contenedor.innerHTML = '';
     if (!raiz) return;
 
-    // Wrapper con controles de zoom
+    // Controles superiores
     var controles = document.createElement('div');
     controles.className = 'arbol-controles';
     controles.innerHTML =
-        '<button class="arbol-btn" onclick="zoomArbol(0.2)">＋</button>' +
-        '<button class="arbol-btn" onclick="zoomArbol(-0.2)">－</button>' +
-        '<button class="arbol-btn" onclick="resetArbol()">↺ Reset</button>' +
-        '<span class="arbol-leyenda">' +
-        '<span class="arbol-leyenda-item" style="background:#3E2A14;color:#FAF7F2">Raíz</span>' +
-        '<span class="arbol-leyenda-item" style="background:#8B5E3C;color:#FAF7F2">Oración</span>' +
-        '<span class="arbol-leyenda-item" style="background:#C4AE84;color:#3E2A14">Frase</span>' +
-        '<span class="arbol-leyenda-item" style="background:#FAF7F2;color:#3E2A14;border:1px solid #C4AE84">Token</span>' +
-        '</span>';
+        '<div class="arbol-zoom-grupo">' +
+        '<button class="arbol-btn" onclick="zoomArbol(0.15)" title="Acercar">＋</button>' +
+        '<span class="arbol-zoom-label" id="arbolZoomLabel">100%</span>' +
+        '<button class="arbol-btn" onclick="zoomArbol(-0.15)" title="Alejar">－</button>' +
+        '<button class="arbol-btn arbol-btn-reset" onclick="resetArbol()" title="Restablecer">↺</button>' +
+        '</div>' +
+        '<div class="arbol-leyenda">' +
+        '<span class="arbol-leyenda-item" style="background:#3E2A14;color:#FAF7F2;">Programa</span>' +
+        '<span class="arbol-leyenda-item" style="background:#8B5E3C;color:#FAF7F2;">Oración</span>' +
+        '<span class="arbol-leyenda-item" style="background:#BFA880;color:#3E2A14;">Frase</span>' +
+        '<span class="arbol-leyenda-item" style="background:#FFFFFF;color:#3E2A14;border:1.5px solid #C4AE84;">Token</span>' +
+        '</div>';
     contenedor.appendChild(controles);
 
-    // Canvas SVG donde se dibuja el árbol
+    // Área del SVG
     var svgWrapper = document.createElement('div');
-    svgWrapper.className  = 'arbol-svg-wrapper';
-    svgWrapper.id         = 'arbolSvgWrapper';
+    svgWrapper.className = 'arbol-svg-wrapper';
+    svgWrapper.id        = 'arbolSvgWrapper';
     contenedor.appendChild(svgWrapper);
 
+    // Calcula posiciones
     var nodos  = [];
     var lineas = [];
-    calcularPosiciones(raiz, 0, 0, nodos, lineas, { x: 0 });
+    calcularPosiciones(raiz, 0, nodos, lineas, { x: 0 });
 
-    // Ajusta el tamaño del SVG al contenido
-    var maxX = Math.max.apply(null, nodos.map(function(n) { return n.x; })) + 100;
-    var maxY = Math.max.apply(null, nodos.map(function(n) { return n.y; })) + 80;
+    var PADDING = 60;
+    var maxX = Math.max.apply(null, nodos.map(function(n) { return n.x; })) + PADDING;
+    var maxY = Math.max.apply(null, nodos.map(function(n) { return n.y; })) + PADDING;
 
+    // Crea el SVG
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width',  maxX);
-    svg.setAttribute('height', maxY);
+    svg.setAttribute('width',   Math.max(maxX, 600));
+    svg.setAttribute('height',  maxY);
+    svg.setAttribute('xmlns',   'http://www.w3.org/2000/svg');
     svg.id = 'arbolSvg';
 
-    // Dibuja líneas primero (quedan debajo de los nodos)
+    // Fondo suave
+    var fondo = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    fondo.setAttribute('width',  '100%');
+    fondo.setAttribute('height', '100%');
+    fondo.setAttribute('fill',   '#F8F4EE');
+    svg.appendChild(fondo);
+
+    // Dibuja las conexiones con curvas bezier
     lineas.forEach(function(l) {
-        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', l.x1);
-        line.setAttribute('y1', l.y1);
-        line.setAttribute('x2', l.x2);
-        line.setAttribute('y2', l.y2);
-        line.setAttribute('stroke', '#C4AE84');
-        line.setAttribute('stroke-width', '1.5');
-        line.setAttribute('stroke-dasharray', l.terminal ? '4,3' : 'none');
-        svg.appendChild(line);
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        var mx   = (l.x1 + l.x2) / 2;
+        var my   = (l.y1 + l.y2) / 2;
+        var d    = 'M ' + l.x1 + ' ' + l.y1 +
+            ' C ' + l.x1 + ' ' + my +
+            ' ' + l.x2 + ' ' + my +
+            ' ' + l.x2 + ' ' + l.y2;
+        path.setAttribute('d',            d);
+        path.setAttribute('fill',         'none');
+        path.setAttribute('stroke',       l.terminal ? '#C4AE84' : '#9C7E5A');
+        path.setAttribute('stroke-width', l.terminal ? '1.2' : '1.8');
+        svg.appendChild(path);
     });
 
-    // Dibuja nodos
+    // Dibuja los nodos
     nodos.forEach(function(n) {
         var color = COLORES_NODO[n.tipo] || COLORES_NODO['terminal'];
         var g     = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        g.setAttribute('cursor', n.tieneHijos ? 'pointer' : 'default');
-        g.setAttribute('data-id', n.id);
 
         if (n.terminal) {
-            // Token: rectángulo redondeado
+            // Token: rectángulo redondeado con sombra
+            var sombra = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            sombra.setAttribute('x',       n.x - 28);
+            sombra.setAttribute('y',       n.y - 11);
+            sombra.setAttribute('width',   56);
+            sombra.setAttribute('height',  26);
+            sombra.setAttribute('rx',      8);
+            sombra.setAttribute('fill',    'rgba(0,0,0,0.08)');
+            g.appendChild(sombra);
+
             var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            rect.setAttribute('x',      n.x - 30);
-            rect.setAttribute('y',      n.y - 14);
-            rect.setAttribute('width',  60);
-            rect.setAttribute('height', 28);
-            rect.setAttribute('rx',     6);
-            rect.setAttribute('fill',   color.fondo);
-            rect.setAttribute('stroke', '#C4AE84');
-            rect.setAttribute('stroke-width', '1');
+            rect.setAttribute('x',            n.x - 30);
+            rect.setAttribute('y',            n.y - 13);
+            rect.setAttribute('width',        60);
+            rect.setAttribute('height',       26);
+            rect.setAttribute('rx',           8);
+            rect.setAttribute('fill',         color.fondo);
+            rect.setAttribute('stroke',       color.borde);
+            rect.setAttribute('stroke-width', '1.5');
             g.appendChild(rect);
+
         } else {
-            // Regla BNF: elipse
-            var ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            ellipse.setAttribute('cx',    n.x);
-            ellipse.setAttribute('cy',    n.y);
-            ellipse.setAttribute('rx',    46);
-            ellipse.setAttribute('ry',    18);
-            ellipse.setAttribute('fill',  color.fondo);
-            ellipse.setAttribute('stroke', '#9C7E5A');
-            ellipse.setAttribute('stroke-width', '1.5');
-            g.appendChild(ellipse);
+            // Regla BNF: elipse con sombra
+            var sombraE = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            sombraE.setAttribute('cx',   n.x + 2);
+            sombraE.setAttribute('cy',   n.y + 3);
+            sombraE.setAttribute('rx',   50);
+            sombraE.setAttribute('ry',   20);
+            sombraE.setAttribute('fill', 'rgba(0,0,0,0.10)');
+            g.appendChild(sombraE);
+
+            var elipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            elipse.setAttribute('cx',            n.x);
+            elipse.setAttribute('cy',            n.y);
+            elipse.setAttribute('rx',            50);
+            elipse.setAttribute('ry',            20);
+            elipse.setAttribute('fill',          color.fondo);
+            elipse.setAttribute('stroke',        color.borde);
+            elipse.setAttribute('stroke-width',  '2');
+            g.appendChild(elipse);
         }
 
         // Texto del nodo
         var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x',           n.x);
-        text.setAttribute('y',           n.y + 4);
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('font-size',   n.terminal ? '11' : '10');
-        text.setAttribute('font-weight', n.terminal ? '600' : '500');
-        text.setAttribute('fill',        color.texto);
-        text.setAttribute('font-family', 'DM Sans, sans-serif');
-        text.textContent = n.etiqueta.length > 10 ? n.etiqueta.substring(0, 9) + '…' : n.etiqueta;
+        text.setAttribute('x',            n.x);
+        text.setAttribute('y',            n.y + 5);
+        text.setAttribute('text-anchor',  'middle');
+        text.setAttribute('font-size',    n.terminal ? '12' : '11');
+        text.setAttribute('font-weight',  n.terminal ? '700' : '600');
+        text.setAttribute('fill',         color.texto);
+        text.setAttribute('font-family',  'DM Sans, sans-serif');
+        text.textContent = n.etiqueta.length > 12
+            ? n.etiqueta.substring(0, 11) + '…'
+            : n.etiqueta;
         g.appendChild(text);
-
-        // Indicador de colapso si tiene hijos
-        if (n.tieneHijos) {
-            var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx',   n.x + 38);
-            circle.setAttribute('cy',   n.y - 12);
-            circle.setAttribute('r',    7);
-            circle.setAttribute('fill', '#9C7E5A');
-            g.appendChild(circle);
-
-            var signo = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            signo.setAttribute('x',           n.x + 38);
-            signo.setAttribute('y',           n.y - 8);
-            signo.setAttribute('text-anchor', 'middle');
-            signo.setAttribute('font-size',   '10');
-            signo.setAttribute('fill',        '#FAF7F2');
-            signo.setAttribute('font-weight', 'bold');
-            signo.textContent = '−';
-            g.appendChild(signo);
-        }
 
         svg.appendChild(g);
     });
 
     svgWrapper.appendChild(svg);
-
-    // Habilita arrastrar el árbol con el mouse
-    habilitarArrastre(svgWrapper, svg);
+    habilitarArrastre(svgWrapper);
 }
 
-// Calcula la posición X,Y de cada nodo recursivamente
-function calcularPosiciones(nodo, nivel, contador, nodos, lineas, contadorRef) {
-    var ANCHO_NODO = 110;
-    var ALTO_NIVEL = 75;
+// Calcula posición X,Y de cada nodo con espaciado cómodo
+function calcularPosiciones(nodo, nivel, nodos, lineas, ref) {
+    var ANCHO = 120;
+    var ALTO  = 80;
+    var id    = nodos.length;
+    nodos.push(null); // reserva el lugar
 
-    var id = nodos.length;
     var posX, posY;
+    posY = nivel * ALTO + 50;
 
     if (!nodo.hijos || nodo.hijos.length === 0) {
-        posX = contadorRef.x * ANCHO_NODO + 60;
-        posY = nivel * ALTO_NIVEL + 40;
-        contadorRef.x++;
+        posX = ref.x * ANCHO + 70;
+        ref.x++;
     } else {
-        var xInicio = contadorRef.x;
-        var hijos   = [];
+        var xInicio  = ref.x;
+        var hijosIds = [];
         nodo.hijos.forEach(function(hijo) {
-            var hijoId = nodos.length;
-            calcularPosiciones(hijo, nivel + 1, contadorRef.x, nodos, lineas, contadorRef);
-            hijos.push(hijoId);
+            hijosIds.push(nodos.length);
+            calcularPosiciones(hijo, nivel + 1, nodos, lineas, ref);
         });
-        var xFin = contadorRef.x - 1;
-        posX = ((xInicio + xFin) / 2) * ANCHO_NODO + 60;
-        posY = nivel * ALTO_NIVEL + 40;
+        var xFin = ref.x - 1;
+        posX = ((xInicio + xFin) / 2) * ANCHO + 70;
 
-        // Agrega líneas desde este nodo hacia sus hijos
-        hijos.forEach(function(hijoId) {
+        // Líneas curvas desde padre a cada hijo
+        hijosIds.forEach(function(hid) {
             lineas.push({
-                x1: posX, y1: posY + 18,
-                x2: nodos[hijoId].x, y2: nodos[hijoId].y - 18,
-                terminal: nodos[hijoId].terminal
+                x1: posX,        y1: posY + 20,
+                x2: nodos[hid].x, y2: nodos[hid].y - 20,
+                terminal: nodos[hid].terminal
             });
         });
     }
@@ -406,65 +417,53 @@ function calcularPosiciones(nodo, nivel, contador, nodos, lineas, contadorRef) {
     };
 }
 
-// Zoom del árbol
 function zoomArbol(delta) {
-    escalaArbol = Math.min(2, Math.max(0.4, escalaArbol + delta));
-    var svg = document.getElementById('arbolSvg');
-    if (svg) svg.style.transform = 'scale(' + escalaArbol + ')';
+    escalaArbol = Math.min(2.5, Math.max(0.3, escalaArbol + delta));
+    var svg   = document.getElementById('arbolSvg');
+    var label = document.getElementById('arbolZoomLabel');
+    if (svg)   svg.style.transform = 'scale(' + escalaArbol + ')';
+    if (label) label.textContent   = Math.round(escalaArbol * 100) + '%';
 }
 
-// Reset del árbol
 function resetArbol() {
     escalaArbol = 1;
-    var svg = document.getElementById('arbolSvg');
-    if (svg) {
-        svg.style.transform   = 'scale(1)';
-        svg.style.marginLeft  = '0';
-        svg.style.marginTop   = '0';
-    }
+    var svg     = document.getElementById('arbolSvg');
+    var wrapper = document.getElementById('arbolSvgWrapper');
+    var label   = document.getElementById('arbolZoomLabel');
+    if (svg)     svg.style.transform = 'scale(1)';
+    if (wrapper) { wrapper.scrollLeft = 0; wrapper.scrollTop = 0; }
+    if (label)   label.textContent   = '100%';
 }
 
-// Habilita arrastrar el SVG con el mouse
-function habilitarArrastre(wrapper, svg) {
-    var startX, startY, scrollLeft, scrollTop;
+function habilitarArrastre(wrapper) {
+    var startX, startY, scrollL, scrollT;
 
     wrapper.addEventListener('mousedown', function(e) {
-        arrastrando = true;
-        startX      = e.pageX - wrapper.offsetLeft;
-        startY      = e.pageY - wrapper.offsetTop;
-        scrollLeft  = wrapper.scrollLeft;
-        scrollTop   = wrapper.scrollTop;
+        arrastrandoArbol = true;
+        startX  = e.pageX;
+        startY  = e.pageY;
+        scrollL = wrapper.scrollLeft;
+        scrollT = wrapper.scrollTop;
         wrapper.style.cursor = 'grabbing';
     });
-
-    wrapper.addEventListener('mouseleave', function() {
-        arrastrando = false;
-        wrapper.style.cursor = 'grab';
-    });
-
-    wrapper.addEventListener('mouseup', function() {
-        arrastrando = false;
-        wrapper.style.cursor = 'grab';
-    });
-
-    wrapper.addEventListener('mousemove', function(e) {
-        if (!arrastrando) return;
+    wrapper.addEventListener('mouseup',    function() { arrastrandoArbol = false; wrapper.style.cursor = 'grab'; });
+    wrapper.addEventListener('mouseleave', function() { arrastrandoArbol = false; wrapper.style.cursor = 'grab'; });
+    wrapper.addEventListener('mousemove',  function(e) {
+        if (!arrastrandoArbol) return;
         e.preventDefault();
-        var x = e.pageX - wrapper.offsetLeft;
-        var y = e.pageY - wrapper.offsetTop;
-        wrapper.scrollLeft = scrollLeft - (x - startX);
-        wrapper.scrollTop  = scrollTop  - (y - startY);
+        wrapper.scrollLeft = scrollL - (e.pageX - startX);
+        wrapper.scrollTop  = scrollT - (e.pageY - startY);
     });
-
-    // Zoom con rueda del mouse
     wrapper.addEventListener('wheel', function(e) {
         e.preventDefault();
         zoomArbol(e.deltaY < 0 ? 0.1 : -0.1);
-    });
+    }, { passive: false });
 }
 
-
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 6 — ANÁLISIS SINTÁCTICO
+//  Sincronizado con AnalizadorSintactico.java
+// ══════════════════════════════════════════════════════
 
 function ejecutarAnalisisSintactico(tokens) {
     const resultado = { errores: [] };
@@ -560,9 +559,10 @@ function ejecutarAnalisisSintactico(tokens) {
     return resultado;
 }
 
-
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 7 — ÁRBOL (construcción de nodos)
 //  Sincronizado con ArbolDerivacion.java
+// ══════════════════════════════════════════════════════
 
 function construirArbol(tokens) {
     let posicion = 0;
@@ -651,8 +651,10 @@ function construirArbol(tokens) {
     return raiz;
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 8 — ANÁLISIS SEMÁNTICO
 //  Sincronizado con AnalizadorSemantico.java
+// ══════════════════════════════════════════════════════
 
 function ejecutarAnalisisSemantico(tokens, direccion) {
     const resultado = { errores: [] };
@@ -734,9 +736,11 @@ function ejecutarAnalisisSemantico(tokens, direccion) {
     return resultado;
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 9 — ANÁLISIS LÉXICO
 //  Sincronizado con AnalizadorLexico.java,
 //  DiccionarioIngles.java y DiccionarioEspanol.java
+// ══════════════════════════════════════════════════════
 
 function ejecutarAnalisisLexico(texto, direccion) {
     const resultado = { tokens: [], errores: [] };
