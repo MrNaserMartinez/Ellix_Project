@@ -2,6 +2,8 @@ package org.example.lexico.diccionario;
 
 import org.example.lexico.Token;
 
+// Contiene todos los métodos para clasificar palabras en español.
+// Expandido con más verbos, sustantivos, adjetivos y adverbios.
 public class Diccionarioespanol {
 
     // ── Artículos ──
@@ -342,6 +344,13 @@ public class Diccionarioespanol {
         );
     }
 
+    // ── Reconoce plurales regulares de sustantivos en español, para manejo de palabras plurales en español
+    public boolean esSustantivoPlural(String p) {
+        if (p.endsWith("es") && esSustantivo(p.substring(0, p.length() - 2))) return true;
+        if (p.endsWith("s")  && esSustantivo(p.substring(0, p.length() - 1))) return true;
+        return false;
+    }
+
     // ── Método principal ──
     public Token.Categoria clasificar(String palabra) {
         if (esArticulo(palabra))               return Token.Categoria.ARTICULO;
@@ -355,6 +364,7 @@ public class Diccionarioespanol {
         if (esConjuncionSubordinante(palabra)) return Token.Categoria.CONJUNCION;
         if (esAdjetivo(palabra))               return Token.Categoria.ADJETIVO;
         if (esSustantivo(palabra))             return Token.Categoria.SUSTANTIVO;
+        if (esSustantivoPlural(palabra))       return Token.Categoria.SUSTANTIVO;
         if (esInterjeccion(palabra))           return Token.Categoria.INTERJECCION;
         return null;
     }

@@ -1,29 +1,24 @@
 package org.example.sintactico;
 
-//Valida que los tokens dell análisis léxico sigan el orden definido en las gramáticas BNF.
-//Se ejecuta solo si el análisis léxico funciona (Confio en que funciona Blankita y que no lo haga cuando no deba).
-
 import org.example.lexico.Token;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AnalizadorSintactico {
 
-    private List<Token>         tokens;
+    private List<Token>           tokens;
     private List<ErrorSintactico> errores;
-    private int                 posicion;
+    private int                   posicion;
 
     public AnalizadorSintactico() {
-        this.errores  = new ArrayList<>();
+        this.errores = new ArrayList<>();
     }
 
-    // Método principal: recibe los tokens del léxico y valida cada oración
     public void analizar(List<Token> tokens) {
         this.tokens   = tokens;
         this.posicion = 0;
         this.errores.clear();
 
-        // Analiza oración por oración hasta consumir todos los tokens
         while (posicion < tokens.size()) {
             analizarOracion();
         }
@@ -31,109 +26,110 @@ public class AnalizadorSintactico {
 
     // <oracion> ::= <sujeto> <predicado> <puntuacion_final>?
     private void analizarOracion() {
-
-        // Ignora puntuación suelta al inicio
         if (tokenActual() != null && esCategoria(Token.Categoria.PUNTUACION)) {
             avanzar();
             return;
         }
 
-        int inicioOracion = posicion;
-
-        // Intenta analizar sujeto
         if (!analizarSujeto()) {
             registrarError("Se esperaba un sujeto (pronombre, artículo + sustantivo)", tokenActual());
             recuperar();
             return;
         }
 
-        // Intenta analizar predicado
         if (!analizarPredicado()) {
             registrarError("Se esperaba un predicado (verbo)", tokenActual());
             recuperar();
             return;
         }
 
-        // Puntuación final opcional
         if (tokenActual() != null && esCategoria(Token.Categoria.PUNTUACION)) {
             avanzar();
         }
     }
 
-    // <sujeto> ::= <frase_nominal>
     private boolean analizarSujeto() {
         return analizarFraseNominal();
     }
 
-    // <predicado> ::= <frase_verbal>
-    //               | <frase_verbal> <frase_nominal>
-    //               | <frase_verbal> <frase_preposicional>
-    //               | <frase_verbal> <frase_nominal> <frase_preposicional>
-    //               | <frase_verbal> <frase_adjetival>
+    // <predicado> ::= <frase_verbal> <complemento>*
     private boolean analizarPredicado() {
         if (!analizarFraseVerbal()) return false;
 
-        // Complemento opcional después del verbo
-        if (tokenActual() == null || esFinOracion()) return true;
+        // Consume todos los complementos opcionales que vengan después del verbo
+        while (tokenActual() != null && !esFinOracion()) {
 
-        // Intenta frase preposicional
-        if (esCategoria(Token.Categoria.PREPOSICION)) {
-            analizarFrasePreposicional();
-            return true;
-        }
-
-        // Intenta frase nominal como complemento
-        if (esDeterminante() || esCategoria(Token.Categoria.SUSTANTIVO) || esCategoria(Token.Categoria.PRONOMBRE)) {
-            analizarFraseNominal();
-
-            // Frase preposicional adicional opcional
-            if (tokenActual() != null && esCategoria(Token.Categoria.PREPOSICION)) {
+            // Frase preposicional
+            if (esCategoria(Token.Categoria.PREPOSICION)) {
                 analizarFrasePreposicional();
+                continue;
             }
-            return true;
-        }
 
-        // Intenta frase adjetival como complemento
-        if (esCategoria(Token.Categoria.ADJETIVO)) {
-            analizarFraseAdjetival();
-            return true;
+            // Frase adjetival (predicativo: "She is beautiful and happy")
+            if (esCategoria(Token.Categoria.ADJETIVO)) {
+                analizarFraseAdjetival();
+                continue;
+            }
+
+            // Frase nominal como complemento directo
+            if (esDeterminante() || esCategoria(Token.Categoria.SUSTANTIVO)
+                    || esCategoria(Token.Categoria.PRONOMBRE)) {
+                analizarFraseNominal();
+                continue;
+            }
+
+            // Adverbio adicional después del verbo
+            if (esCategoria(Token.Categoria.ADVERBIO)) {
+                avanzar();
+                continue;
+            }
+
+            break;
         }
 
         return true;
     }
 
-    // <frase_nominal> ::= <determinante> <sustantivo>
-    //                   | <determinante> <adjetivo> <sustantivo>
-    //                   | <determinante> <sustantivo> <adjetivo>
+    // <frase_nominal> ::= <determinante> (<adjetivo> (CONJUNCION <adjetivo>)*)* <sustantivo> <adjetivo>?
     //                   | <pronombre>
     //                   | <sustantivo>
     private boolean analizarFraseNominal() {
 
-        // Solo pronombre
         if (esCategoria(Token.Categoria.PRONOMBRE)) {
             avanzar();
             return true;
         }
 
-        // Solo sustantivo
         if (esCategoria(Token.Categoria.SUSTANTIVO)) {
             avanzar();
             return true;
         }
 
-        // Determinante + (adjetivo?) + sustantivo
         if (esDeterminante()) {
-            avanzar(); // consume determinante
+            avanzar();
 
-            // Adjetivo antes del sustantivo (inglés: "a beautiful girl")
-            if (esCategoria(Token.Categoria.ADJETIVO)) {
+            // Uno o más adjetivos coordinados antes del sustantivo
+            // Cubre: "a beautiful and happy girl"
+            while (esCategoria(Token.Categoria.ADJETIVO)) {
                 avanzar();
+                // Conjunción coordinando adjetivos: "beautiful and happy"
+                if (tokenActual() != null && esCategoria(Token.Categoria.CONJUNCION)) {
+                    int guardado = posicion;
+                    avanzar();
+                    // Solo avanza si lo siguiente es adjetivo, si no deshace
+                    if (esCategoria(Token.Categoria.ADJETIVO)) {
+                        avanzar();
+                    } else {
+                        posicion = guardado;
+                        break;
+                    }
+                } else {
+                    break;
+                }
             }
 
-            // Debe venir un sustantivo
             if (esCategoria(Token.Categoria.SUSTANTIVO)) {
                 avanzar();
-
                 // Adjetivo después del sustantivo (español: "el gato negro")
                 if (tokenActual() != null && esCategoria(Token.Categoria.ADJETIVO)) {
                     avanzar();
@@ -141,7 +137,6 @@ public class AnalizadorSintactico {
                 return true;
             }
 
-            // Determinante sin sustantivo: error
             registrarError("Se esperaba un sustantivo después del determinante", tokenActual());
             return false;
         }
@@ -149,26 +144,14 @@ public class AnalizadorSintactico {
         return false;
     }
 
-    // <frase_verbal> ::= VERBO
-    //                  | VERBO <adverbio>
-    //                  | <adverbio> VERBO
+    // <frase_verbal> ::= <adverbio>? VERBO <adverbio>?
     private boolean analizarFraseVerbal() {
+        if (esCategoria(Token.Categoria.ADVERBIO)) avanzar();
 
-        // Adverbio antes del verbo
-        if (esCategoria(Token.Categoria.ADVERBIO)) {
-            avanzar();
-        }
-
-        // El verbo es obligatorio
-        if (!esCategoria(Token.Categoria.VERBO)) {
-            return false;
-        }
+        if (!esCategoria(Token.Categoria.VERBO)) return false;
         avanzar();
 
-        // Adverbio después del verbo
-        if (tokenActual() != null && esCategoria(Token.Categoria.ADVERBIO)) {
-            avanzar();
-        }
+        if (tokenActual() != null && esCategoria(Token.Categoria.ADVERBIO)) avanzar();
 
         return true;
     }
@@ -185,34 +168,31 @@ public class AnalizadorSintactico {
         return true;
     }
 
-    // <frase_adjetival> ::= ADJETIVO
-    //                     | ADJETIVO CONJUNCION ADJETIVO
+    // <frase_adjetival> ::= ADJETIVO (CONJUNCION ADJETIVO)*
     private boolean analizarFraseAdjetival() {
         if (!esCategoria(Token.Categoria.ADJETIVO)) return false;
         avanzar();
 
-        // Adjetivo coordinado: "beautiful and happy"
-        if (tokenActual() != null && esCategoria(Token.Categoria.CONJUNCION)) {
+        while (tokenActual() != null && esCategoria(Token.Categoria.CONJUNCION)) {
+            int guardado = posicion;
             avanzar();
             if (esCategoria(Token.Categoria.ADJETIVO)) {
                 avanzar();
             } else {
-                registrarError("Se esperaba un adjetivo después de la conjunción", tokenActual());
+                posicion = guardado;
+                break;
             }
         }
         return true;
     }
 
-    // ── Utilidades de navegación ──
+    // ── Utilidades ──
 
     private Token tokenActual() {
-        if (posicion < tokens.size()) return tokens.get(posicion);
-        return null;
+        return posicion < tokens.size() ? tokens.get(posicion) : null;
     }
 
-    private void avanzar() {
-        posicion++;
-    }
+    private void avanzar() { posicion++; }
 
     private boolean esCategoria(Token.Categoria categoria) {
         Token t = tokenActual();
@@ -222,32 +202,26 @@ public class AnalizadorSintactico {
     private boolean esDeterminante() {
         Token t = tokenActual();
         if (t == null) return false;
-        return t.getCategoria() == Token.Categoria.ARTICULO    ||
-                t.getCategoria() == Token.Categoria.POSESIVO    ||
+        return t.getCategoria() == Token.Categoria.ARTICULO     ||
+                t.getCategoria() == Token.Categoria.POSESIVO     ||
                 t.getCategoria() == Token.Categoria.DEMOSTRATIVO ||
                 t.getCategoria() == Token.Categoria.NUMERAL;
     }
 
     private boolean esFinOracion() {
         Token t = tokenActual();
-        if (t == null) return true;
-        if (t.getCategoria() == Token.Categoria.PUNTUACION) return true;
-        return false;
+        return t == null || t.getCategoria() == Token.Categoria.PUNTUACION;
     }
 
-    // Avanza hasta encontrar puntuación o fin para recuperarse de un error
     private void recuperar() {
-        while (tokenActual() != null && !esCategoria(Token.Categoria.PUNTUACION)) {
-            avanzar();
-        }
+        while (tokenActual() != null && !esCategoria(Token.Categoria.PUNTUACION)) avanzar();
         if (tokenActual() != null) avanzar();
     }
 
-    // Registra un error sintáctico con ubicación
     private void registrarError(String descripcion, Token token) {
-        int linea   = token != null ? token.getLinea()   : -1;
-        int columna = token != null ? token.getColumna() : -1;
-        String lexema = token != null ? token.getLexema() : "fin de texto";
+        int    linea   = token != null ? token.getLinea()   : -1;
+        int    columna = token != null ? token.getColumna() : -1;
+        String lexema  = token != null ? token.getLexema()  : "fin de texto";
         errores.add(new ErrorSintactico(lexema, linea, columna, descripcion));
     }
 

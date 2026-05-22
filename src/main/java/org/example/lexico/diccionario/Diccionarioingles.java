@@ -2,6 +2,8 @@ package org.example.lexico.diccionario;
 
 import org.example.lexico.Token;
 
+//Diccionario lexico en ingles
+
 public class Diccionarioingles {
 
     // ── Artículos ──
@@ -288,6 +290,14 @@ public class Diccionarioingles {
         );
     }
 
+    // ── Reconoce plurales regulares de sustantivos, nuevo manejo de plurales
+    public boolean esSustantivoPlural(String p) {
+        if (p.endsWith("ies") && esSustantivo(p.substring(0, p.length() - 3) + "y")) return true;
+        if (p.endsWith("es")  && esSustantivo(p.substring(0, p.length() - 2)))       return true;
+        if (p.endsWith("s")   && esSustantivo(p.substring(0, p.length() - 1)))       return true;
+        return false;
+    }
+
     // ── Método principal ──
     public Token.Categoria clasificar(String palabra) {
         if (esArticulo(palabra))               return Token.Categoria.ARTICULO;
@@ -301,6 +311,7 @@ public class Diccionarioingles {
         if (esConjuncionSubordinante(palabra)) return Token.Categoria.CONJUNCION;
         if (esAdjetivo(palabra))               return Token.Categoria.ADJETIVO;
         if (esSustantivo(palabra))             return Token.Categoria.SUSTANTIVO;
+        if (esSustantivoPlural(palabra))       return Token.Categoria.SUSTANTIVO;
         if (esInterjeccion(palabra))           return Token.Categoria.INTERJECCION;
         return null;
     }
