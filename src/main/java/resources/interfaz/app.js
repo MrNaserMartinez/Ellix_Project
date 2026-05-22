@@ -1,16 +1,11 @@
-// ══════════════════════════════════════════════════════
+
 //  app.js — Ellix Compiler Translator
-//  Integración completa: léxico + sintáctico + semántico
-//  La síntesis (traducción real) será implementada por el Programador 3
-// ══════════════════════════════════════════════════════
 
 let direccionActual = 'en-es';
 
 const TEXTO_PRUEBA = "The cat runs quickly in the house.\nShe is a beautiful and happy girl.\nThey have good books at school.";
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 1 — INICIO
-// ══════════════════════════════════════════════════════
 
 window.onload = function() {
     document.getElementById('inputText').value = TEXTO_PRUEBA;
@@ -18,9 +13,7 @@ window.onload = function() {
     mostrarToast('Texto de prueba cargado');
 };
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 2 — CONTROL DE INTERFAZ
-// ══════════════════════════════════════════════════════
 
 function setDirection(dir) {
     direccionActual = dir;
@@ -85,9 +78,8 @@ function escaparHTML(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ══════════════════════════════════════════════════════
+
 //  SECCIÓN 3 — CARGA DE ARCHIVOS .txt
-// ══════════════════════════════════════════════════════
 
 function cargarArchivo(event) {
     const archivo = event.target.files[0];
@@ -103,12 +95,7 @@ function cargarArchivo(event) {
     event.target.value = '';
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 4 — PIPELINE DE ANÁLISIS
-//  Léxico → Sintáctico → Semántico
-//  Cada fase solo corre si la anterior fue exitosa
-// ══════════════════════════════════════════════════════
-
 function analizarTexto() {
     const texto = document.getElementById('inputText').value.trim();
     if (!texto) { mostrarToast('Escribe o carga un texto primero'); return; }
@@ -217,9 +204,7 @@ function llenarTablaErrores(errores) {
     });
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 5 — ÁRBOL DE DERIVACIÓN (visual interactivo)
-// ══════════════════════════════════════════════════════
 
 var COLORES_NODO = {
     'programa':      { fondo: '#3E2A14', texto: '#FAF7F2', borde: '#3E2A14' },
@@ -270,13 +255,23 @@ function renderizarArbol(raiz) {
     var lineas = [];
     calcularPosiciones(raiz, 0, nodos, lineas, { x: 0 });
 
-    var PADDING = 60;
-    var maxX = Math.max.apply(null, nodos.map(function(n) { return n.x; })) + PADDING;
-    var maxY = Math.max.apply(null, nodos.map(function(n) { return n.y; })) + PADDING;
+    var PADDING  = 80;
+    var maxX     = Math.max.apply(null, nodos.map(function(n) { return n.x; })) + PADDING;
+    var maxY     = Math.max.apply(null, nodos.map(function(n) { return n.y; })) + PADDING;
 
-    // Crea el SVG
+    // Ancho del wrapper para centrar el árbol
+    // Si el árbol es más angosto que el wrapper, lo centramos con offset
+    var wrapperW = Math.max(window.innerWidth - 80, 800);
+    var svgW     = Math.max(maxX, wrapperW);
+    var offsetCentrado = (svgW > maxX) ? (svgW - maxX) / 2 : 0;
+
+    // Desplaza todos los nodos y líneas para que queden centrados
+    nodos.forEach(function(n) { if (n) n.x += offsetCentrado; });
+    lineas.forEach(function(l) { l.x1 += offsetCentrado; l.x2 += offsetCentrado; });
+
+    // Crea el SVG con tamaño ajustado
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width',   Math.max(maxX, 600));
+    svg.setAttribute('width',   svgW);
     svg.setAttribute('height',  maxY);
     svg.setAttribute('xmlns',   'http://www.w3.org/2000/svg');
     svg.id = 'arbolSvg';
@@ -371,6 +366,12 @@ function renderizarArbol(raiz) {
 
     svgWrapper.appendChild(svg);
     habilitarArrastre(svgWrapper);
+
+    // Centra el scroll horizontalmente al generar el árbol
+    setTimeout(function() {
+        svgWrapper.scrollLeft = Math.max(0, (svgWrapper.scrollWidth - svgWrapper.clientWidth) / 2);
+        svgWrapper.scrollTop  = 0;
+    }, 50);
 }
 
 // Calcula posición X,Y de cada nodo con espaciado cómodo
@@ -430,9 +431,13 @@ function resetArbol() {
     var svg     = document.getElementById('arbolSvg');
     var wrapper = document.getElementById('arbolSvgWrapper');
     var label   = document.getElementById('arbolZoomLabel');
-    if (svg)     svg.style.transform = 'scale(1)';
-    if (wrapper) { wrapper.scrollLeft = 0; wrapper.scrollTop = 0; }
-    if (label)   label.textContent   = '100%';
+    if (svg)   svg.style.transform = 'scale(1)';
+    if (label) label.textContent   = '100%';
+    // Vuelve al scroll centrado
+    if (wrapper) {
+        wrapper.scrollTop  = 0;
+        wrapper.scrollLeft = Math.max(0, (wrapper.scrollWidth - wrapper.clientWidth) / 2);
+    }
 }
 
 function habilitarArrastre(wrapper) {
@@ -460,10 +465,9 @@ function habilitarArrastre(wrapper) {
     }, { passive: false });
 }
 
-// ══════════════════════════════════════════════════════
-//  SECCIÓN 6 — ANÁLISIS SINTÁCTICO
-//  Sincronizado con AnalizadorSintactico.java
-// ══════════════════════════════════════════════════════
+
+//  SECCIÓN 6 — ANÁLISIS SINTÁCTICO y Sincronizado con AnalizadorSintactico.java
+
 
 function ejecutarAnalisisSintactico(tokens) {
     const resultado = { errores: [] };
@@ -559,10 +563,7 @@ function ejecutarAnalisisSintactico(tokens) {
     return resultado;
 }
 
-// ══════════════════════════════════════════════════════
-//  SECCIÓN 7 — ÁRBOL (construcción de nodos)
-//  Sincronizado con ArbolDerivacion.java
-// ══════════════════════════════════════════════════════
+//  SECCIÓN 7 — ÁRBOL (construcción de nodos) y Sincronizado con ArbolDerivacion.java
 
 function construirArbol(tokens) {
     let posicion = 0;
@@ -651,10 +652,7 @@ function construirArbol(tokens) {
     return raiz;
 }
 
-// ══════════════════════════════════════════════════════
-//  SECCIÓN 8 — ANÁLISIS SEMÁNTICO
-//  Sincronizado con AnalizadorSemantico.java
-// ══════════════════════════════════════════════════════
+//  SECCIÓN 8 — ANÁLISIS SEMÁNTICO y Sincronizado con AnalizadorSemantico.java
 
 function ejecutarAnalisisSemantico(tokens, direccion) {
     const resultado = { errores: [] };
@@ -736,11 +734,10 @@ function ejecutarAnalisisSemantico(tokens, direccion) {
     return resultado;
 }
 
-// ══════════════════════════════════════════════════════
-//  SECCIÓN 9 — ANÁLISIS LÉXICO
-//  Sincronizado con AnalizadorLexico.java,
+
+//  SECCIÓN 9 — ANÁLISIS LÉXICO Sincronizado con AnalizadorLexico.java,
 //  DiccionarioIngles.java y DiccionarioEspanol.java
-// ══════════════════════════════════════════════════════
+
 
 function ejecutarAnalisisLexico(texto, direccion) {
     const resultado = { tokens: [], errores: [] };

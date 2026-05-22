@@ -494,6 +494,7 @@ body {
 
 
 
+
 /* ══════════════════════════
    ÁRBOL DE DERIVACIÓN
    ══════════════════════════ */
@@ -502,7 +503,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
+    padding: 12px 20px;
     background: var(--cream-dark);
     border-bottom: 1px solid var(--sand);
     flex-wrap: wrap;
@@ -512,15 +513,15 @@ body {
 .arbol-zoom-grupo {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .arbol-btn {
     background: var(--warm-white);
     border: 1px solid var(--sand-dark);
     color: var(--brown-dark);
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 6px;
     font-size: 1rem;
     font-weight: 600;
@@ -538,41 +539,45 @@ body {
 
 .arbol-btn-reset {
     width: auto;
-    padding: 0 12px;
+    padding: 0 14px;
     font-size: 0.82rem;
 }
 
 .arbol-zoom-label {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--brown-light);
-    min-width: 38px;
+    min-width: 42px;
     text-align: center;
 }
 
 .arbol-leyenda {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .arbol-leyenda-item {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 500;
-    padding: 3px 10px;
+    padding: 3px 12px;
     border-radius: 20px;
     letter-spacing: 0.03em;
 }
 
-/* Área principal del SVG */
+/* Área principal — grande y centrada */
 .arbol-svg-wrapper {
     overflow: auto;
-    height: 420px;
+    height: 600px;          /* altura generosa */
     cursor: grab;
     background: #F8F4EE;
     position: relative;
     user-select: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center; /* centra horizontalmente */
+    padding: 24px;
 }
 
 .arbol-svg-wrapper:active {
@@ -581,6 +586,7 @@ body {
 
 #arbolSvg {
     display: block;
-    transform-origin: top left;
+    transform-origin: top center; /* zoom desde el centro */
     transition: transform 0.12s ease;
+    margin: 0 auto;              /* centrado adicional */
 }
