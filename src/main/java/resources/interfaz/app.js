@@ -1,7 +1,4 @@
-// ══════════════════════════════════════════════════════
 //  app.js — Ellix Compiler Translator
-//  Integración completa: léxico + sintáctico + semántico
-// ══════════════════════════════════════════════════════
 
 let direccionActual = 'en-es';
 let escalaArbol     = 1;
@@ -9,18 +6,15 @@ let arrastrando     = false;
 
 const TEXTO_PRUEBA = "The cat runs quickly in the house.\nShe is a beautiful and happy girl.\nThey have good books at school.";
 
-// ══════════════════════════════════════════════════════
+
 //  SECCIÓN 1 — INICIO
-// ══════════════════════════════════════════════════════
 
 window.onload = function() {
     document.getElementById('inputText').value = TEXTO_PRUEBA;
     manejarEntrada();
 };
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 2 — CONTROL DE INTERFAZ
-// ══════════════════════════════════════════════════════
 
 function setDirection(dir) {
     direccionActual = dir;
@@ -87,9 +81,7 @@ function escaparHTML(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 3 — CARGA DE ARCHIVOS
-// ══════════════════════════════════════════════════════
 
 function cargarArchivo(event) {
     const archivo = event.target.files[0];
@@ -105,9 +97,7 @@ function cargarArchivo(event) {
     event.target.value = '';
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 4 — PIPELINE DE ANÁLISIS
-// ══════════════════════════════════════════════════════
 
 function analizarTexto() {
     const texto = document.getElementById('inputText').value.trim();
@@ -210,9 +200,7 @@ function llenarTablaErrores(errores) {
     });
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 5 — ÁRBOL DE DERIVACIÓN
-// ══════════════════════════════════════════════════════
 
 var COLORES = {
     'programa':      { f:'#3E2A14', t:'#FAF7F2', b:'#3E2A14' },
@@ -256,9 +244,10 @@ function renderizarArbol(raiz) {
     var nodos = [], lineas = [];
     calcularPos(raiz, 0, nodos, lineas, { x: 0 });
 
-    var PADDING  = 80;
-    var maxX     = Math.max.apply(null, nodos.map(function(n){ return n.x; })) + PADDING;
-    var maxY     = Math.max.apply(null, nodos.map(function(n){ return n.y; })) + PADDING;
+    var PAD_X    = 100;
+    var PAD_Y    = 80;
+    var maxX     = Math.max.apply(null, nodos.map(function(n){ return n.x; })) + PAD_X;
+    var maxY     = Math.max.apply(null, nodos.map(function(n){ return n.y; })) + PAD_Y;
     var wrapperW = Math.max(window.innerWidth - 80, 800);
     var svgW     = Math.max(maxX, wrapperW);
     var offset   = (svgW - maxX) / 2;
@@ -292,27 +281,35 @@ function renderizarArbol(raiz) {
         var c = COLORES[n.tipo] || COLORES['terminal'];
         var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
+        // Calcula ancho dinámico según largo del texto
+        var charW    = n.terminal ? 8 : 7;
+        var minW     = n.terminal ? 55 : 80;
+        var nodoW    = Math.max(minW, n.etiqueta.length * charW + 20);
+        var nodoH    = 28;
+        var rx_term  = nodoW / 2;
+
         if (n.terminal) {
             var sh = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            sh.setAttribute('x', n.x-28); sh.setAttribute('y', n.y-10);
-            sh.setAttribute('width','56'); sh.setAttribute('height','26');
+            sh.setAttribute('x', n.x - rx_term + 2); sh.setAttribute('y', n.y - nodoH/2 + 2);
+            sh.setAttribute('width', nodoW); sh.setAttribute('height', nodoH);
             sh.setAttribute('rx','8'); sh.setAttribute('fill','rgba(0,0,0,0.07)');
             g.appendChild(sh);
             var r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            r.setAttribute('x', n.x-30); r.setAttribute('y', n.y-13);
-            r.setAttribute('width','60'); r.setAttribute('height','26');
+            r.setAttribute('x', n.x - rx_term); r.setAttribute('y', n.y - nodoH/2);
+            r.setAttribute('width', nodoW); r.setAttribute('height', nodoH);
             r.setAttribute('rx','8'); r.setAttribute('fill', c.f);
             r.setAttribute('stroke', c.b); r.setAttribute('stroke-width','1.5');
             g.appendChild(r);
         } else {
+            var rx_elipse = Math.max(44, n.etiqueta.length * charW / 2 + 12);
             var sh2 = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
             sh2.setAttribute('cx', n.x+2); sh2.setAttribute('cy', n.y+3);
-            sh2.setAttribute('rx','50'); sh2.setAttribute('ry','20');
+            sh2.setAttribute('rx', rx_elipse); sh2.setAttribute('ry','20');
             sh2.setAttribute('fill','rgba(0,0,0,0.09)');
             g.appendChild(sh2);
             var el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
             el.setAttribute('cx', n.x); el.setAttribute('cy', n.y);
-            el.setAttribute('rx','50'); el.setAttribute('ry','20');
+            el.setAttribute('rx', rx_elipse); el.setAttribute('ry','20');
             el.setAttribute('fill', c.f); el.setAttribute('stroke', c.b);
             el.setAttribute('stroke-width','2');
             g.appendChild(el);
@@ -325,7 +322,7 @@ function renderizarArbol(raiz) {
         txt.setAttribute('font-weight', n.terminal ? '700' : '600');
         txt.setAttribute('fill', c.t);
         txt.setAttribute('font-family','DM Sans, sans-serif');
-        txt.textContent = n.etiqueta.length > 12 ? n.etiqueta.substring(0,11)+'…' : n.etiqueta;
+        txt.textContent = n.etiqueta; // sin truncar
         g.appendChild(txt);
         svg.appendChild(g);
     });
@@ -345,10 +342,11 @@ function renderizarArbol(raiz) {
 }
 
 function calcularPos(nodo, nivel, nodos, lineas, ref) {
-    var ANCHO = 120, ALTO = 80;
+    var ANCHO = 90;   // más compacto horizontalmente
+    var ALTO  = 90;   // más espacio vertical entre niveles
     var id    = nodos.length;
     nodos.push(null);
-    var posX, posY = nivel * ALTO + 50;
+    var posX, posY = nivel * ALTO + 60;
 
     if (!nodo.hijos || nodo.hijos.length === 0) {
         posX = ref.x * ANCHO + 70;
@@ -361,7 +359,7 @@ function calcularPos(nodo, nivel, nodos, lineas, ref) {
         });
         posX = ((xIni + ref.x - 1) / 2) * ANCHO + 70;
         hijosIds.forEach(function(hid) {
-            lineas.push({ x1:posX, y1:posY+20, x2:nodos[hid].x, y2:nodos[hid].y-20, terminal:nodos[hid].terminal });
+            lineas.push({ x1:posX, y1:posY+22, x2:nodos[hid].x, y2:nodos[hid].y-22, terminal:nodos[hid].terminal });
         });
     }
 
@@ -407,9 +405,7 @@ function habilitarArrastre(wrapper) {
     }, { passive:false });
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 6 — ANÁLISIS LÉXICO
-// ══════════════════════════════════════════════════════
 
 // Lista de sustantivos en inglés (para verificar plurales sin recursión)
 var SUST_EN = /^(cat|dog|bird|fish|horse|cow|sheep|pig|lion|tiger|bear|wolf|fox|rabbit|deer|elephant|monkey|snake|turtle|frog|butterfly|eagle|owl|parrot|penguin|dolphin|whale|shark|man|woman|boy|girl|child|baby|person|people|teacher|student|doctor|nurse|engineer|lawyer|king|queen|prince|princess|president|mother|father|son|daughter|brother|sister|friend|enemy|neighbor|stranger|hero|artist|musician|writer|actor|athlete|soldier|house|home|school|hospital|church|store|market|city|town|village|country|world|street|road|bridge|park|garden|forest|mountain|river|sea|ocean|lake|beach|island|room|kitchen|bedroom|bathroom|office|library|restaurant|hotel|airport|station|book|pen|pencil|paper|table|chair|door|window|wall|floor|phone|computer|television|camera|radio|car|bus|train|plane|boat|bicycle|bag|box|bottle|cup|plate|spoon|knife|fork|bed|pillow|blanket|mirror|lamp|clock|sun|moon|star|sky|cloud|rain|snow|wind|fire|water|air|earth|tree|flower|grass|leaf|seed|fruit|vegetable|apple|orange|banana|grape|strawberry|mango|bread|rice|meat|egg|milk|cheese|butter|sugar|salt|time|day|night|morning|afternoon|evening|week|month|year|hour|minute|second|life|death|love|hate|peace|war|truth|lie|idea|thought|dream|memory|story|news|word|sentence|language|name|number|color|music|art|game|sport|dance|song|money|price|work|job|business|food|health|energy|power|light|sound|problem|question|answer|reason|result|way|place|thing|part|group|team|heart|mind|body|hand|eye|face|head|voice|smile|tear|breath|weather|temperature|storm|thunder|lightning|building|roof|path|corner|center)$/;
@@ -531,9 +527,7 @@ function subAdverbioES(p) {
     return 'Modo';
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 7 — ANÁLISIS SINTÁCTICO
-// ══════════════════════════════════════════════════════
 
 function analizarSintactico(tokens) {
     var res = { errores:[] };
@@ -552,7 +546,7 @@ function analizarSintactico(tokens) {
         if (esCat('Sustantivo')) { adv(); return true; }
         if (esDet()) {
             adv();
-            // Adjetivos coordinados: "a beautiful and happy girl"
+            // Adjetivos coordinados
             while (esCat('Adjetivo')) {
                 adv();
                 if (cur() && esCat('Conjuncion')) {
@@ -605,9 +599,7 @@ function analizarSintactico(tokens) {
     return res;
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 8 — ÁRBOL (construcción de nodos)
-// ══════════════════════════════════════════════════════
 
 function construirArbol(tokens) {
     var pos = 0;
@@ -677,9 +669,7 @@ function construirArbol(tokens) {
     return raiz;
 }
 
-// ══════════════════════════════════════════════════════
 //  SECCIÓN 9 — ANÁLISIS SEMÁNTICO
-// ══════════════════════════════════════════════════════
 
 function analizarSemantico(tokens, direccion) {
     var res = { errores:[] };
