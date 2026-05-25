@@ -1,4 +1,7 @@
+// ══════════════════════════════════════════════════════
 //  app.js — Ellix Compiler Translator
+//  Integración completa: léxico + sintáctico + semántico
+// ══════════════════════════════════════════════════════
 
 let direccionActual = 'en-es';
 let escalaArbol     = 1;
@@ -340,8 +343,8 @@ function renderizarArbol(raiz) {
 
     wrapper.appendChild(svg);
 
-    // Ajusta la altura del wrapper al contenido del SVG
-    wrapper.style.height = Math.min(maxY + 50, window.innerHeight * 0.8) + 'px';
+    // Ajusta la altura del wrapper exactamente al contenido del SVG
+    wrapper.style.height = (maxY + 50) + 'px';
 
     // Centra el scroll al generar
     setTimeout(function() {
