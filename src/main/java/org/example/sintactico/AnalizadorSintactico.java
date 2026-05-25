@@ -24,11 +24,16 @@ public class AnalizadorSintactico {
         }
     }
 
-    // <oracion> ::= <sujeto> <predicado> <puntuacion_final>?
+    // <oracion> ::= <interjeccion>? <sujeto> <predicado> <puntuacion_final>?
     private void analizarOracion() {
         if (tokenActual() != null && esCategoria(Token.Categoria.PUNTUACION)) {
             avanzar();
             return;
+        }
+
+        // Interjección opcional al inicio: "Hello my name is..."
+        if (tokenActual() != null && esCategoria(Token.Categoria.INTERJECCION)) {
+            avanzar();
         }
 
         if (!analizarSujeto()) {

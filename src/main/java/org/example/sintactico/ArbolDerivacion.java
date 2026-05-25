@@ -1,7 +1,6 @@
 package org.example.sintactico;
 
-//Construye el árbol de derivación de una oración.
-//Solo se ejecuta si el análisis sintáctico fue exitoso.
+// Construye y representa el árbol de derivación de una oración.
 
 import org.example.lexico.Token;
 import java.util.ArrayList;
@@ -56,6 +55,12 @@ public class ArbolDerivacion {
         }
 
         Nodo oracion = new Nodo("oracion", false);
+
+        // Interjección opcional al inicio
+        if (tokenActual() != null && esCategoria(Token.Categoria.INTERJECCION)) {
+            oracion.agregarHijo(new Nodo(tokenActual().getLexema(), true));
+            avanzar();
+        }
 
         // Sujeto
         Nodo sujeto = construirSujeto();

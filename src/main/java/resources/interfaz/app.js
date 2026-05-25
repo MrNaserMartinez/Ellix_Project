@@ -1,7 +1,4 @@
-// ══════════════════════════════════════════════════════
 //  app.js — Ellix Compiler Translator
-//  Integración completa: léxico + sintáctico + semántico
-// ══════════════════════════════════════════════════════
 
 let direccionActual = 'en-es';
 let escalaArbol     = 1;
@@ -608,7 +605,8 @@ function analizarSintactico(tokens) {
     }
 
     while (pos < tokens.length) {
-        if (esCat('Puntuacion')) { adv(); continue; }
+        if (esCat('Puntuacion'))    { adv(); continue; }
+        if (esCat('Interjeccion'))  { adv(); continue; } // interjección opcional al inicio
         if (!fraseNominal())    { err('Se esperaba un sujeto (pronombre, artículo + sustantivo)'); recuperar(); continue; }
         if (!predicado())       { err('Se esperaba un predicado (verbo)'); recuperar(); continue; }
         if (cur() && esCat('Puntuacion')) adv();
@@ -673,6 +671,8 @@ function construirArbol(tokens) {
 
     function oracion() {
         var nd  = n('oracion', false);
+        // Interjección opcional al inicio
+        if (esCat('Interjeccion')) { nd.hijos.push(n(cur().lexema, true)); adv(); }
         var suj = n('sujeto', false);
         suj.hijos.push(fn());
         nd.hijos.push(suj);
