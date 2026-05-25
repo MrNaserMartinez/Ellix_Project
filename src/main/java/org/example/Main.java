@@ -1,32 +1,37 @@
 package org.example;
 
 import org.example.lexico.AnalizadorLexico;
-import org.example.lexico.Tablatokens;
-import org.example.semantico.AnalizadorSemantico;
-import org.example.semantico.TablaErrores;
 import org.example.sintactico.AnalizadorSintactico;
 import org.example.sintactico.ArbolDerivacion;
 import org.example.sintactico.ErrorSintactico;
+import org.example.semantico.AnalizadorSemantico;
+import org.example.semantico.TablaErrores;
+import org.example.semantico.ErrorSemantico;
+import org.example.lexico.ErrorLexico;
+import org.example.lexico.Token;
+import org.example.sintesis.Traductor;
 
+// Punto de entrada del programa.
+// Ejecuta los 3 análisis en secuencia y genera la traducción si no hay errores.
 public class Main {
 
     public static void main(String[] args) {
 
-        // Textos de prueba: válidos e inválidos
         String[][] pruebas = {
                 {"The cat runs quickly in the house.", "en-es"},
                 {"She is a beautiful and happy girl.", "en-es"},
                 {"They have good books at school.",    "en-es"},
-                {"runs The house in cat.",             "en-es"},  // error sintáctico
+                {"runs The house in cat.",             "en-es"},
                 {"el gato corre rápido.",              "es-en"},
                 {"la casa es bonita.",                 "es-en"},
-                {"el casa es bonita.",                 "es-en"},  // error semántico
+                {"el casa es bonita.",                 "es-en"},
         };
+
+        Traductor traductor = new Traductor();
 
         for (String[] prueba : pruebas) {
             String texto     = prueba[0];
             String direccion = prueba[1];
-
             TablaErrores tablaErrores = new TablaErrores();
 
             System.out.println("\n╔══════════════════════════════════════════════════════╗");
@@ -34,54 +39,60 @@ public class Main {
             System.out.println("  DIRECCIÓN: " + direccion);
             System.out.println("╚══════════════════════════════════════════════════════╝");
 
-            // ── FASE 1: Análisis Léxico ──
+            // ── Fase 1: Léxico ──
             AnalizadorLexico lexico = new AnalizadorLexico(direccion);
             lexico.analizar(texto);
 
-            Tablatokens tablaTokens = new Tablatokens(lexico.getTokens(), lexico.getErrores());
-            tablaTokens.imprimirTablaTokens();
+            // Imprime tokens reconocidos
+            System.out.println("\n  TOKENS:");
+            for (Token t : lexico.getTokens()) {
+                System.out.printf("  %-15s | %-15s | %s%n",
+                        t.getLexema(), t.getCategoria(), t.getSubcategoria());
+            }
 
             if (!lexico.esExitoso()) {
                 tablaErrores.agregarErroresLexicos(lexico.getErrores());
                 tablaErrores.imprimir();
-                System.out.println("  ✗ Análisis léxico fallido. No se continúa.");
+                System.out.println("  ✗ Análisis léxico fallido.\n");
                 continue;
             }
             System.out.println("  ✓ Análisis léxico exitoso.");
 
-            // ── FASE 2: Análisis Sintáctico ──
+            // ── Fase 2: Sintáctico ──
             AnalizadorSintactico sintactico = new AnalizadorSintactico();
             sintactico.analizar(lexico.getTokens());
 
             if (!sintactico.esExitoso()) {
                 tablaErrores.agregarErroresSintacticos(sintactico.getErrores());
                 tablaErrores.imprimir();
-                System.out.println("  ✗ Análisis sintáctico fallido. No se genera árbol.");
+                System.out.println("  ✗ Análisis sintáctico fallido. No se genera árbol.\n");
                 continue;
             }
             System.out.println("  ✓ Análisis sintáctico exitoso.");
 
-            // ── Árbol de Derivación ──
+            // ── Árbol de derivación ──
             ArbolDerivacion arbol = new ArbolDerivacion();
             arbol.construir(lexico.getTokens());
             arbol.imprimir();
 
-            // ── FASE 3: Análisis Semántico ──
+            // ── Fase 3: Semántico ──
             AnalizadorSemantico semantico = new AnalizadorSemantico();
             semantico.analizar(lexico.getTokens(), direccion);
 
             if (!semantico.esExitoso()) {
                 tablaErrores.agregarErroresSemanticos(semantico.getErrores());
                 tablaErrores.imprimir();
-                System.out.println("  ✗ Análisis semántico fallido.");
+                System.out.println("  ✗ Análisis semántico fallido.\n");
                 continue;
             }
-
             System.out.println("  ✓ Análisis semántico exitoso.");
-            System.out.println("  ✓ Listo para síntesis (Programador 3).");
 
-            // Resumen final sin errores
-            System.out.println("  RESUMEN: " + tablaErrores.obtenerResumen());
+            // ── Síntesis: Traducción ──
+            String traduccion = traductor.traducir(lexico.getTokens(), direccion);
+            System.out.println("\n  TRADUCCIÓN : " + traduccion);
+            System.out.println("\n  CLASIFICACIÓN:");
+            System.out.print(traductor.clasificacionCompleta(lexico.getTokens()));
+            System.out.println("  ✓ Síntesis completada.\n");
         }
     }
 }

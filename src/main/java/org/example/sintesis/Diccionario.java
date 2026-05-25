@@ -476,7 +476,7 @@ public class Diccionario {
         esEn.put("?","?");esEn.put(";",";");esEn.put(":",":");
     }
 
-    // Traduce una palabra según la dirección indicada
+
     public String traducir(String palabra, String direccion) {
         String p = palabra.toLowerCase();
         if (direccion.equals("en-es")) return enEs.getOrDefault(p, palabra);

@@ -1,4 +1,7 @@
+// ══════════════════════════════════════════════════════
 //  app.js — Ellix Compiler Translator
+//  Integración completa: léxico + sintáctico + semántico
+// ══════════════════════════════════════════════════════
 
 let direccionActual = 'en-es';
 let escalaArbol     = 1;
@@ -6,15 +9,18 @@ let arrastrando     = false;
 
 const TEXTO_PRUEBA = "The cat runs quickly in the house.\nShe is a beautiful and happy girl.\nThey have good books at school.";
 
-
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 1 — INICIO
+// ══════════════════════════════════════════════════════
 
 window.onload = function() {
     document.getElementById('inputText').value = TEXTO_PRUEBA;
     manejarEntrada();
 };
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 2 — CONTROL DE INTERFAZ
+// ══════════════════════════════════════════════════════
 
 function setDirection(dir) {
     direccionActual = dir;
@@ -81,7 +87,9 @@ function escaparHTML(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 3 — CARGA DE ARCHIVOS
+// ══════════════════════════════════════════════════════
 
 function cargarArchivo(event) {
     const archivo = event.target.files[0];
@@ -97,7 +105,9 @@ function cargarArchivo(event) {
     event.target.value = '';
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 4 — PIPELINE DE ANÁLISIS
+// ══════════════════════════════════════════════════════
 
 function analizarTexto() {
     const texto = document.getElementById('inputText').value.trim();
@@ -151,7 +161,9 @@ function analizarTexto() {
     }
 
     actualizarStatus('Sin errores', 'ok');
-    mostrarTraduccion('[Síntesis pendiente — Programador 3]');
+    // Síntesis: genera la traducción real palabra por palabra
+    var traduccion = generarTraduccion(resLexico.tokens, direccionActual);
+    mostrarTraduccion(traduccion);
     mostrarTab('tokens');
 }
 
@@ -200,7 +212,9 @@ function llenarTablaErrores(errores) {
     });
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 5 — ÁRBOL DE DERIVACIÓN
+// ══════════════════════════════════════════════════════
 
 var COLORES = {
     'programa':      { f:'#3E2A14', t:'#FAF7F2', b:'#3E2A14' },
@@ -405,7 +419,9 @@ function habilitarArrastre(wrapper) {
     }, { passive:false });
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 6 — ANÁLISIS LÉXICO
+// ══════════════════════════════════════════════════════
 
 // Lista de sustantivos en inglés (para verificar plurales sin recursión)
 var SUST_EN = /^(cat|dog|bird|fish|horse|cow|sheep|pig|lion|tiger|bear|wolf|fox|rabbit|deer|elephant|monkey|snake|turtle|frog|butterfly|eagle|owl|parrot|penguin|dolphin|whale|shark|man|woman|boy|girl|child|baby|person|people|teacher|student|doctor|nurse|engineer|lawyer|king|queen|prince|princess|president|mother|father|son|daughter|brother|sister|friend|enemy|neighbor|stranger|hero|artist|musician|writer|actor|athlete|soldier|house|home|school|hospital|church|store|market|city|town|village|country|world|street|road|bridge|park|garden|forest|mountain|river|sea|ocean|lake|beach|island|room|kitchen|bedroom|bathroom|office|library|restaurant|hotel|airport|station|book|pen|pencil|paper|table|chair|door|window|wall|floor|phone|computer|television|camera|radio|car|bus|train|plane|boat|bicycle|bag|box|bottle|cup|plate|spoon|knife|fork|bed|pillow|blanket|mirror|lamp|clock|sun|moon|star|sky|cloud|rain|snow|wind|fire|water|air|earth|tree|flower|grass|leaf|seed|fruit|vegetable|apple|orange|banana|grape|strawberry|mango|bread|rice|meat|egg|milk|cheese|butter|sugar|salt|time|day|night|morning|afternoon|evening|week|month|year|hour|minute|second|life|death|love|hate|peace|war|truth|lie|idea|thought|dream|memory|story|news|word|sentence|language|name|number|color|music|art|game|sport|dance|song|money|price|work|job|business|food|health|energy|power|light|sound|problem|question|answer|reason|result|way|place|thing|part|group|team|heart|mind|body|hand|eye|face|head|voice|smile|tear|breath|weather|temperature|storm|thunder|lightning|building|roof|path|corner|center)$/;
@@ -527,7 +543,9 @@ function subAdverbioES(p) {
     return 'Modo';
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 7 — ANÁLISIS SINTÁCTICO
+// ══════════════════════════════════════════════════════
 
 function analizarSintactico(tokens) {
     var res = { errores:[] };
@@ -546,7 +564,7 @@ function analizarSintactico(tokens) {
         if (esCat('Sustantivo')) { adv(); return true; }
         if (esDet()) {
             adv();
-            // Adjetivos coordinados
+            // Adjetivos coordinados: "a beautiful and happy girl"
             while (esCat('Adjetivo')) {
                 adv();
                 if (cur() && esCat('Conjuncion')) {
@@ -599,7 +617,9 @@ function analizarSintactico(tokens) {
     return res;
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 8 — ÁRBOL (construcción de nodos)
+// ══════════════════════════════════════════════════════
 
 function construirArbol(tokens) {
     var pos = 0;
@@ -669,7 +689,9 @@ function construirArbol(tokens) {
     return raiz;
 }
 
+// ══════════════════════════════════════════════════════
 //  SECCIÓN 9 — ANÁLISIS SEMÁNTICO
+// ══════════════════════════════════════════════════════
 
 function analizarSemantico(tokens, direccion) {
     var res = { errores:[] };
@@ -733,4 +755,317 @@ function analizarSemantico(tokens, direccion) {
     });
 
     return res;
+}
+
+// ══════════════════════════════════════════════════════
+//  SECCIÓN 10 — SÍNTESIS (TRADUCCIÓN)
+//  Traduce cada token usando el diccionario bilingüe.
+//  Solo se ejecuta cuando los 3 análisis son exitosos.
+// ══════════════════════════════════════════════════════
+
+// Diccionario EN→ES
+var DIC_EN_ES = {
+    // Artículos
+    "the":"el","a":"un","an":"un",
+    // Pronombres
+    "i":"yo","you":"tú","he":"él","she":"ella","it":"eso",
+    "we":"nosotros","they":"ellos","me":"me","him":"lo","her":"la","us":"nos","them":"los",
+    // Posesivos
+    "my":"mi","your":"tu","his":"su","its":"su","our":"nuestro","their":"su",
+    // Demostrativos
+    "this":"este","that":"ese","these":"estos","those":"esos",
+    // Verbos auxiliares
+    "is":"es","are":"son","was":"era","were":"eran","be":"ser","been":"sido","am":"soy",
+    "have":"tengo","has":"tiene","had":"tenía","do":"hago","does":"hace","did":"hizo",
+    "will":"va a","would":"podría","can":"puede","could":"podría","should":"debería","must":"debe",
+    // Verbos comunes
+    "run":"correr","runs":"corre","ran":"corrió",
+    "eat":"comer","eats":"come","ate":"comió",
+    "go":"ir","goes":"va","went":"fue",
+    "see":"ver","sees":"ve","saw":"vio",
+    "come":"venir","comes":"viene","came":"vino",
+    "know":"saber","knows":"sabe","knew":"supo",
+    "think":"pensar","thinks":"piensa","thought":"pensó",
+    "like":"gustar","likes":"gusta","liked":"gustó",
+    "want":"querer","wants":"quiere","wanted":"quería",
+    "need":"necesitar","needs":"necesita","needed":"necesitaba",
+    "love":"amar","loves":"ama","loved":"amó",
+    "feel":"sentir","feels":"siente","felt":"sintió",
+    "read":"leer","reads":"lee",
+    "write":"escribir","writes":"escribe","wrote":"escribió",
+    "speak":"hablar","speaks":"habla","spoke":"habló",
+    "listen":"escuchar","listens":"escucha",
+    "work":"trabajar","works":"trabaja","worked":"trabajó",
+    "play":"jugar","plays":"juega","played":"jugó",
+    "study":"estudiar","studies":"estudia","studied":"estudió",
+    "learn":"aprender","learns":"aprende","learned":"aprendió",
+    "teach":"enseñar","teaches":"enseña","taught":"enseñó",
+    "help":"ayudar","helps":"ayuda","helped":"ayudó",
+    "make":"hacer","makes":"hace","made":"hizo",
+    "take":"tomar","takes":"toma","took":"tomó",
+    "give":"dar","gives":"da","gave":"dio",
+    "get":"obtener","gets":"obtiene","got":"obtuvo",
+    "find":"encontrar","finds":"encuentra","found":"encontró",
+    "keep":"mantener","keeps":"mantiene","kept":"mantuvo",
+    "start":"empezar","starts":"empieza","started":"empezó",
+    "stop":"detener","stops":"detiene","stopped":"detuvo",
+    "open":"abrir","opens":"abre","opened":"abrió",
+    "close":"cerrar","closes":"cierra","closed":"cerró",
+    "call":"llamar","calls":"llama","called":"llamó",
+    "try":"intentar","tries":"intenta","tried":"intentó",
+    "use":"usar","uses":"usa","used":"usó",
+    "show":"mostrar","shows":"muestra","showed":"mostró",
+    "walk":"caminar","walks":"camina","walked":"caminó",
+    "talk":"hablar","talks":"habla","talked":"habló",
+    "live":"vivir","lives":"vive","lived":"vivió",
+    "sleep":"dormir","sleeps":"duerme","slept":"durmió",
+    "buy":"comprar","buys":"compra","bought":"compró",
+    "win":"ganar","wins":"gana","won":"ganó",
+    "lose":"perder","loses":"pierde","lost":"perdió",
+    "sing":"cantar","sings":"canta","sang":"cantó",
+    "dance":"bailar","dances":"baila","danced":"bailó",
+    "cook":"cocinar","cooks":"cocina","cooked":"cocinó",
+    "wait":"esperar","waits":"espera","waited":"esperó",
+    "ask":"preguntar","asks":"pregunta","asked":"preguntó",
+    "answer":"responder","answers":"responde","answered":"respondió",
+    "move":"mover","moves":"mueve","moved":"movió",
+    "bring":"traer","brings":"trae","brought":"trajo",
+    "say":"decir","says":"dice","said":"dijo",
+    "tell":"contar","tells":"cuenta","told":"contó",
+    "draw":"dibujar","draws":"dibuja","drew":"dibujó",
+    "create":"crear","creates":"crea","created":"creó",
+    "fly":"volar","flies":"vuela","flew":"voló",
+    "swim":"nadar","swims":"nada","swam":"nadó",
+    "drive":"conducir","drives":"conduce","drove":"condujo",
+    // Sustantivos
+    "cat":"gato","cats":"gatos","dog":"perro","dogs":"perros",
+    "house":"casa","houses":"casas","car":"carro","cars":"carros",
+    "book":"libro","books":"libros","man":"hombre","men":"hombres",
+    "woman":"mujer","women":"mujeres","child":"niño","children":"niños",
+    "boy":"chico","boys":"chicos","girl":"chica","girls":"chicas",
+    "baby":"bebé","babies":"bebés","day":"día","days":"días",
+    "year":"año","years":"años","time":"tiempo","life":"vida",
+    "world":"mundo","school":"escuela","schools":"escuelas","work":"trabajo",
+    "water":"agua","food":"comida","city":"ciudad","cities":"ciudades",
+    "country":"país","countries":"países","family":"familia","families":"familias",
+    "friend":"amigo","friends":"amigos","hand":"mano","hands":"manos",
+    "eye":"ojo","eyes":"ojos","face":"cara","head":"cabeza",
+    "door":"puerta","doors":"puertas","table":"mesa","tables":"mesas",
+    "chair":"silla","chairs":"sillas","room":"habitación","rooms":"habitaciones",
+    "tree":"árbol","trees":"árboles","flower":"flor","flowers":"flores",
+    "bird":"pájaro","birds":"pájaros","sun":"sol","moon":"luna",
+    "star":"estrella","stars":"estrellas","sky":"cielo",
+    "street":"calle","streets":"calles","name":"nombre","names":"nombres",
+    "word":"palabra","words":"palabras","language":"idioma",
+    "morning":"mañana","afternoon":"tarde","night":"noche",
+    "week":"semana","weeks":"semanas","month":"mes","months":"meses",
+    "money":"dinero","road":"camino","heart":"corazón","mind":"mente",
+    "body":"cuerpo","voice":"voz","story":"historia","stories":"historias",
+    "question":"pregunta","questions":"preguntas",
+    "problem":"problema","problems":"problemas","idea":"idea","ideas":"ideas",
+    "teacher":"maestro","teachers":"maestros","student":"estudiante","students":"estudiantes",
+    "doctor":"doctor","doctors":"doctores","mother":"madre","father":"padre",
+    "son":"hijo","sons":"hijos","daughter":"hija","daughters":"hijas",
+    "brother":"hermano","brothers":"hermanos","sister":"hermana","sisters":"hermanas",
+    "people":"gente","person":"persona","place":"lugar","places":"lugares",
+    "thing":"cosa","things":"cosas","park":"parque","parks":"parques",
+    "computer":"computadora","phone":"teléfono","music":"música",
+    "game":"juego","games":"juegos","sport":"deporte","sports":"deportes",
+    "apple":"manzana","apples":"manzanas","bread":"pan","milk":"leche",
+    "egg":"huevo","eggs":"huevos","fruit":"fruta","number":"número",
+    "color":"color","light":"luz","river":"río","rivers":"ríos",
+    "sea":"mar","ocean":"océano","mountain":"montaña","mountains":"montañas",
+    "garden":"jardín","gardens":"jardines","building":"edificio","buildings":"edificios",
+    "window":"ventana","windows":"ventanas","floor":"piso","paper":"papel",
+    "pen":"pluma","pencil":"lápiz",
+    // Adjetivos
+    "good":"bueno","bad":"malo","big":"grande","small":"pequeño",
+    "tall":"alto","short":"bajo","long":"largo","new":"nuevo","old":"viejo",
+    "young":"joven","beautiful":"hermoso","ugly":"feo","happy":"feliz","sad":"triste",
+    "fast":"rápido","slow":"lento","hot":"caliente","cold":"frío","warm":"cálido","cool":"fresco",
+    "white":"blanco","black":"negro","red":"rojo","blue":"azul","green":"verde","yellow":"amarillo",
+    "strong":"fuerte","weak":"débil","hard":"duro","easy":"fácil",
+    "rich":"rico","poor":"pobre","clean":"limpio","dirty":"sucio",
+    "full":"lleno","empty":"vacío","important":"importante","special":"especial",
+    "great":"genial","little":"pequeño","kind":"amable","brave":"valiente",
+    "funny":"gracioso","smart":"inteligente","first":"primero","last":"último",
+    "next":"siguiente","other":"otro","same":"mismo","real":"real",
+    "possible":"posible","different":"diferente","simple":"simple","true":"verdadero",
+    // Adverbios
+    "very":"muy","well":"bien","also":"también","just":"solo","now":"ahora","then":"entonces",
+    "here":"aquí","there":"allí","always":"siempre","never":"nunca","sometimes":"a veces",
+    "still":"todavía","already":"ya","soon":"pronto","again":"otra vez","quite":"bastante",
+    "much":"mucho","more":"más","less":"menos","really":"realmente",
+    "quickly":"rápidamente","slowly":"lentamente","early":"temprano","late":"tarde",
+    "together":"juntos","perhaps":"quizás","maybe":"tal vez","almost":"casi",
+    "yesterday":"ayer","today":"hoy","tomorrow":"mañana",
+    // Preposiciones
+    "in":"en","on":"sobre","at":"en","to":"a","for":"para","of":"de",
+    "with":"con","by":"por","from":"desde","about":"sobre","before":"antes de",
+    "after":"después de","between":"entre","under":"bajo","over":"sobre",
+    "near":"cerca de","behind":"detrás de","without":"sin","during":"durante",
+    "since":"desde","until":"hasta","toward":"hacia","into":"dentro de",
+    "through":"a través de","above":"encima de","below":"debajo de","beside":"al lado de",
+    // Conjunciones
+    "and":"y","but":"pero","or":"o","nor":"ni","so":"así que","yet":"sin embargo",
+    "because":"porque","if":"si","although":"aunque","though":"aunque",
+    "when":"cuando","where":"donde","while":"mientras","that":"que",
+    "which":"cual","who":"quien","than":"que","as":"como",
+    // Puntuación
+    ".":".","!":"!","?":"?",";":";",":":":",",":","
+};
+
+
+// Diccionario ES→EN
+var DIC_ES_EN = {
+    // Artículos
+    "el":"the","la":"the","los":"the","las":"the","lo":"the",
+    "un":"a","una":"a","unos":"some","unas":"some",
+    // Pronombres
+    "yo":"I","tú":"you","él":"he","ella":"she","nosotros":"we","nosotras":"we",
+    "ellos":"they","ellas":"they","me":"me","te":"you","se":"himself",
+    "nos":"us","le":"him","les":"them",
+    // Posesivos
+    "mi":"my","mis":"my","tu":"your","tus":"your","su":"his","sus":"his",
+    "nuestro":"our","nuestra":"our","nuestros":"our","nuestras":"our",
+    // Demostrativos
+    "este":"this","esta":"this","estos":"these","estas":"these",
+    "ese":"that","esa":"that","esos":"those","esas":"those",
+    "aquel":"that","aquella":"that",
+    // Verbos
+    "es":"is","son":"are","era":"was","eran":"were","ser":"to be","sido":"been",
+    "estar":"to be","estoy":"am","estás":"are","está":"is","estamos":"are","están":"are",
+    "estuvo":"was","estuvieron":"were","fue":"was","fueron":"were",
+    "tengo":"have","tienes":"have","tiene":"has","tenemos":"have","tienen":"have",
+    "voy":"go","vas":"go","va":"goes","vamos":"go","van":"go",
+    "corro":"run","corres":"run","corre":"runs","corremos":"run","corren":"run","corrió":"ran",
+    "como":"eat","comes":"eat","come":"eats","comemos":"eat","comen":"eat","comió":"ate",
+    "hablo":"speak","hablas":"speak","habla":"speaks","hablamos":"speak","hablan":"speak","habló":"spoke",
+    "trabajo":"work","trabajas":"work","trabaja":"works","trabajamos":"work","trabajan":"work","trabajó":"worked",
+    "estudio":"study","estudias":"study","estudia":"studies","estudiamos":"study","estudian":"study","estudió":"studied",
+    "vivo":"live","vives":"live","vive":"lives","vivimos":"live","viven":"live","vivió":"lived",
+    "ayudo":"help","ayudas":"help","ayuda":"helps","ayudamos":"help","ayudan":"help","ayudó":"helped",
+    "necesito":"need","necesitas":"need","necesita":"needs","necesitamos":"need","necesitan":"need",
+    "quiero":"want","quieres":"want","quiere":"wants","queremos":"want","quieren":"want","quiso":"wanted",
+    "pienso":"think","piensas":"think","piensa":"thinks","pensamos":"think","piensan":"think","pensó":"thought",
+    "siento":"feel","sientes":"feel","siente":"feels","sentimos":"feel","sienten":"feel","sintió":"felt",
+    "camino":"walk","caminas":"walk","camina":"walks","caminamos":"walk","caminan":"walk","caminó":"walked",
+    "leo":"read","lees":"read","lee":"reads","leemos":"read","leen":"read","leyó":"read",
+    "escribo":"write","escribes":"write","escribe":"writes","escribimos":"write","escriben":"write","escribió":"wrote",
+    "llamo":"call","llamas":"call","llama":"calls","llamamos":"call","llaman":"call","llamó":"called",
+    "abro":"open","abres":"open","abre":"opens","abrimos":"open","abren":"open","abrió":"opened",
+    "cierro":"close","cierras":"close","cierra":"closes","cerramos":"close","cierran":"close","cerró":"closed",
+    "canto":"sing","cantas":"sing","canta":"sings","cantamos":"sing","cantan":"sing","cantó":"sang",
+    "bailo":"dance","bailas":"dance","baila":"dances","bailamos":"dance","bailan":"dance","bailó":"danced",
+    "cocino":"cook","cocinas":"cook","cocina":"cooks","cocinamos":"cook","cocinan":"cook","cocinó":"cooked",
+    "compro":"buy","compras":"buy","compra":"buys","compramos":"buy","compran":"buy","compró":"bought",
+    "duermo":"sleep","duermes":"sleep","duerme":"sleeps","dormimos":"sleep","duermen":"sleep","durmió":"slept",
+    // Sustantivos
+    "gato":"cat","gatos":"cats","perro":"dog","perros":"dogs",
+    "casa":"house","casas":"houses","carro":"car","carros":"cars","coche":"car","coches":"cars",
+    "libro":"book","libros":"books","hombre":"man","hombres":"men",
+    "mujer":"woman","mujeres":"women","niño":"boy","niños":"boys",
+    "niña":"girl","niñas":"girls","bebé":"baby","bebés":"babies",
+    "día":"day","días":"days","año":"year","años":"years",
+    "tiempo":"time","vida":"life","mundo":"world",
+    "escuela":"school","escuelas":"schools","agua":"water","comida":"food",
+    "ciudad":"city","ciudades":"cities","país":"country","países":"countries",
+    "familia":"family","familias":"families","amigo":"friend","amigos":"friends",
+    "amiga":"friend","amigas":"friends","mano":"hand","manos":"hands",
+    "ojo":"eye","ojos":"eyes","cara":"face","cabeza":"head",
+    "puerta":"door","puertas":"doors","mesa":"table","mesas":"tables",
+    "silla":"chair","sillas":"chairs","árbol":"tree","árboles":"trees",
+    "flor":"flower","flores":"flowers","pájaro":"bird","pájaros":"birds",
+    "sol":"sun","luna":"moon","estrella":"star","estrellas":"stars",
+    "cielo":"sky","calle":"street","calles":"streets",
+    "nombre":"name","nombres":"names","palabra":"word","palabras":"words",
+    "idioma":"language","noche":"night","semana":"week","semanas":"weeks",
+    "mes":"month","meses":"months","dinero":"money","corazón":"heart",
+    "mente":"mind","cuerpo":"body","voz":"voice",
+    "historia":"story","historias":"stories","pregunta":"question","preguntas":"questions",
+    "problema":"problem","problemas":"problems","idea":"idea","ideas":"ideas",
+    "maestro":"teacher","maestros":"teachers","maestra":"teacher","maestras":"teachers",
+    "estudiante":"student","estudiantes":"students","doctor":"doctor","doctores":"doctors",
+    "madre":"mother","padre":"father","hijo":"son","hijos":"sons",
+    "hija":"daughter","hijas":"daughters","hermano":"brother","hermanos":"brothers",
+    "hermana":"sister","hermanas":"sisters","gente":"people",
+    "persona":"person","personas":"persons","lugar":"place","lugares":"places",
+    "cosa":"thing","cosas":"things","parque":"park","parques":"parks",
+    "computadora":"computer","teléfono":"phone","teléfonos":"phones",
+    "música":"music","juego":"game","juegos":"games","deporte":"sport","deportes":"sports",
+    "manzana":"apple","manzanas":"apples","pan":"bread","leche":"milk",
+    "huevo":"egg","huevos":"eggs","fruta":"fruit","frutas":"fruits",
+    "número":"number","números":"numbers","color":"color","colores":"colors",
+    "luz":"light","río":"river","ríos":"rivers","mar":"sea","océano":"ocean",
+    "montaña":"mountain","montañas":"mountains","jardín":"garden","jardines":"gardens",
+    "edificio":"building","edificios":"buildings","ventana":"window","ventanas":"windows",
+    "piso":"floor","papel":"paper","pluma":"pen","plumas":"pens","lápiz":"pencil","lápices":"pencils",
+    // Adjetivos
+    "bueno":"good","buena":"good","malo":"bad","mala":"bad",
+    "grande":"big","pequeño":"small","pequeña":"small",
+    "alto":"tall","alta":"tall","bajo":"short","baja":"short",
+    "largo":"long","larga":"long","nuevo":"new","nueva":"new",
+    "viejo":"old","vieja":"old","joven":"young",
+    "hermoso":"beautiful","hermosa":"beautiful","bonito":"pretty","bonita":"pretty",
+    "feo":"ugly","fea":"ugly","feliz":"happy","triste":"sad",
+    "rápido":"fast","rápida":"fast","lento":"slow","lenta":"slow",
+    "caliente":"hot","frío":"cold","fría":"cold","cálido":"warm","cálida":"warm",
+    "fresco":"cool","fresca":"cool","blanco":"white","blanca":"white",
+    "negro":"black","negra":"black","rojo":"red","roja":"red",
+    "azul":"blue","verde":"green","amarillo":"yellow","amarilla":"yellow",
+    "fuerte":"strong","débil":"weak","fácil":"easy","difícil":"hard",
+    "rico":"rich","rica":"rich","pobre":"poor","limpio":"clean","limpia":"clean",
+    "sucio":"dirty","sucia":"dirty","lleno":"full","llena":"full",
+    "vacío":"empty","vacía":"empty","importante":"important","especial":"special",
+    "inteligente":"smart","amable":"kind","valiente":"brave",
+    "gracioso":"funny","graciosa":"funny","serio":"serious","seria":"serious",
+    "primero":"first","primera":"first","último":"last","última":"last",
+    "siguiente":"next","otro":"other","otra":"other","mismo":"same","misma":"same",
+    "posible":"possible","diferente":"different","simple":"simple",
+    "real":"real","verdadero":"true","verdadera":"true",
+    // Adverbios
+    "muy":"very","bien":"well","también":"also","solo":"just",
+    "ahora":"now","entonces":"then","aquí":"here","allí":"there","allá":"there",
+    "siempre":"always","nunca":"never","todavía":"still","ya":"already",
+    "pronto":"soon","bastante":"quite","mucho":"much","más":"more","menos":"less",
+    "realmente":"really","rápidamente":"quickly","lentamente":"slowly",
+    "temprano":"early","tarde":"late","juntos":"together",
+    "quizás":"perhaps","tal vez":"maybe","casi":"almost",
+    "ayer":"yesterday","hoy":"today","mañana":"tomorrow",
+    "lejos":"away","atrás":"back",
+    // Preposiciones
+    "en":"in","sobre":"on","a":"to","para":"for","de":"of","con":"with",
+    "por":"by","desde":"from","hacia":"toward","hasta":"until","entre":"between",
+    "bajo":"under","sin":"without","durante":"during","antes":"before",
+    "después":"after","encima":"above","debajo":"below","cerca":"near","detrás":"behind",
+    // Conjunciones
+    "y":"and","e":"and","pero":"but","o":"or","u":"or","ni":"nor",
+    "porque":"because","si":"if","aunque":"although","cuando":"when",
+    "donde":"where","mientras":"while","que":"that","como":"as","pues":"so",
+    // Contracciones
+    "al":"to the","del":"of the",
+    // Puntuación
+    ".":".","!":"!","?":"?",";":";",":":":",",":","
+};
+
+
+function generarTraduccion(tokens, direccion) {
+    var dic      = direccion === 'en-es' ? DIC_EN_ES : DIC_ES_EN;
+    var resultado = '';
+    var primero   = true;
+
+    tokens.forEach(function(token) {
+        var lexema     = token.lexema;
+        var traduccion = dic[lexema.toLowerCase()] || lexema;
+
+        if (token.categoria === 'Puntuacion') {
+            resultado += traduccion;
+        } else {
+            if (!primero) resultado += ' ';
+            resultado += traduccion;
+        }
+        primero = false;
+    });
+
+    return resultado.trim();
 }
