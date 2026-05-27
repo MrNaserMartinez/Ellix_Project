@@ -508,9 +508,9 @@ function clasificarES(p) {
         return { cat:'Posesivo', sub:'Posesivo', esError:false };
     if (/^(este|esta|estos|estas|ese|esa|esos|esas|aquel|aquella|aquellos|aquellas|esto|eso|aquello)$/.test(p))
         return { cat:'Demostrativo', sub:'Demostrativo', esError:false };
-    if (/^(yo|tú|él|ella|nosotros|nosotras|vosotros|vosotras|ellos|ellas|me|te|se|nos|os|le|lo|la|les|quien|quienes|que|cual|cuales|alguien|nadie|algo|nada|mismo|misma|mismos|mismas)$/.test(p))
+    if (/^(yo|tú|él|ella|nosotros|nosotras|vosotros|vosotras|ellos|ellas|me|te|se|nos|os|le|lo|la|les|quien|quienes|que|cual|cuales|alguien|nadie|algo|nada|mismo|misma|mismos|mismas|todos|todas|todo|cada|cualquier|cualquiera|ambos|ambas)$/.test(p))
         return { cat:'Pronombre', sub:'Personal', esError:false };
-    if (/^(es|son|era|eran|fue|fueron|ser|sido|siendo|estar|estoy|estás|está|estamos|estáis|están|estuvo|estuvieron|haber|he|has|ha|hemos|habéis|han|hubo|tener|tengo|tienes|tiene|tenemos|tienen|tuvo|ir|voy|vas|va|vamos|van|hacer|hago|haces|hace|hacemos|hacen|hizo|poder|puedo|puedes|puede|podemos|pueden|pudo|querer|quiero|quieres|quiere|queremos|quieren|quiso|saber|sé|sabes|sabe|sabemos|saben|supo|ver|veo|ves|ve|vemos|ven|vio|dar|doy|das|da|damos|dan|dio|decir|digo|dices|dice|decimos|dicen|dijo|hablar|hablo|hablas|habla|hablamos|hablan|habló|comer|como|comes|come|comemos|comen|comió|vivir|vivo|vives|vive|vivimos|viven|vivió|trabajar|trabajo|trabajas|trabaja|trabajamos|trabajan|trabajó|estudiar|estudio|estudias|estudia|estudiamos|estudian|estudió|correr|corro|corres|corre|corremos|corren|corrió|leer|leo|lees|lee|leemos|leen|leyó|escribir|escribo|escribes|escribe|escribimos|escriben|escribió|escuchar|escucho|escuchas|escucha|escuchamos|escuchan|escuchó|ayudar|ayudo|ayudas|ayuda|ayudamos|ayudan|ayudó|necesitar|necesito|necesitas|necesita|necesitamos|necesitan|amar|amo|amas|ama|amamos|aman|pensar|pienso|piensas|piensa|pensamos|piensan|sentir|siento|sientes|siente|sentimos|sienten|caminar|camino|caminas|camina|caminamos|caminan|llevar|llevo|llevas|lleva|llevamos|llevan|llamar|llamo|llamas|llama|llamamos|llaman|comenzar|comienzo|comienzas|comienza|comenzamos|comienzan|terminar|termino|terminas|termina|terminamos|terminan|abrir|abro|abres|abre|abrimos|abren|cerrar|cierro|cierras|cierra|cerramos|cierran|jugar|juego|juegas|juega|jugamos|juegan|comprar|compro|compras|compra|compramos|compran|dormir|duermo|duermes|duerme|dormimos|duermen|reír|río|ríes|ríe|reímos|ríen|llorar|lloro|lloras|llora|lloramos|lloran|cantar|canto|cantas|canta|cantamos|cantan|bailar|bailo|bailas|baila|bailamos|bailan)$/.test(p))
+    if (/^(es|son|somos|sois|seré|será|seremos|serán|sería|seríamos|era|eran|fue|fueron|ser|sido|siendo|estar|estoy|estás|está|estamos|estáis|están|estuvo|estuvieron|haber|he|has|ha|hemos|habéis|han|hubo|tener|tengo|tienes|tiene|tenemos|tenéis|tienen|tuvo|tuvieron|tenía|ir|voy|vas|va|vamos|van|hacer|hago|haces|hace|hacemos|hacéis|hacen|hizo|hicieron|poder|puedo|puedes|puede|podemos|podéis|pueden|pudo|pudieron|querer|quiero|quieres|quiere|queremos|queréis|quieren|quiso|quisieron|saber|sé|sabes|sabe|sabemos|saben|supo|ver|veo|ves|ve|vemos|ven|vio|dar|doy|das|da|damos|dan|dio|decir|digo|dices|dice|decimos|dicen|dijo|hablar|hablo|hablas|habla|hablamos|hablan|habló|comer|como|comes|come|comemos|comen|comió|vivir|vivo|vives|vive|vivimos|viven|vivió|trabajar|trabajo|trabajas|trabaja|trabajamos|trabajan|trabajó|estudiar|estudio|estudias|estudia|estudiamos|estudian|estudió|correr|corro|corres|corre|corremos|corren|corrió|leer|leo|lees|lee|leemos|leen|leyó|escribir|escribo|escribes|escribe|escribimos|escriben|escribió|escuchar|escucho|escuchas|escucha|escuchamos|escuchan|escuchó|ayudar|ayudo|ayudas|ayuda|ayudamos|ayudan|ayudó|necesitar|necesito|necesitas|necesita|necesitamos|necesitan|amar|amo|amas|ama|amamos|aman|pensar|pienso|piensas|piensa|pensamos|piensan|sentir|siento|sientes|siente|sentimos|sienten|caminar|camino|caminas|camina|caminamos|caminan|llevar|llevo|llevas|lleva|llevamos|llevan|llamar|llamo|llamas|llama|llamamos|llaman|comenzar|comienzo|comienzas|comienza|comenzamos|comienzan|terminar|termino|terminas|termina|terminamos|terminan|abrir|abro|abres|abre|abrimos|abren|cerrar|cierro|cierras|cierra|cerramos|cierran|jugar|juego|juegas|juega|jugamos|juegan|comprar|compro|compras|compra|compramos|compran|dormir|duermo|duermes|duerme|dormimos|duermen|reír|río|ríes|ríe|reímos|ríen|llorar|lloro|lloras|llora|lloramos|lloran|cantar|canto|cantas|canta|cantamos|cantan|bailar|bailo|bailas|baila|bailamos|bailan)$/.test(p))
         return { cat:'Verbo', sub:'Conjugado', esError:false };
     if (/^(muy|bien|también|ya|ahora|entonces|aquí|allí|allá|siempre|nunca|jamás|frecuentemente|raramente|todavía|aún|pronto|enseguida|antes|después|demasiado|bastante|poco|mucho|más|menos|casi|solo|solamente|únicamente|realmente|verdaderamente|rápido|rápidamente|lento|lentamente|temprano|tarde|lejos|cerca|quizás|quizá|acaso|sí|claro|efectivamente|ciertamente|no|tampoco|ayer|hoy|mañana|anoche)$/.test(p))
         return { cat:'Adverbio', sub:subAdverbioES(p), esError:false };
@@ -914,8 +914,8 @@ var DIC_EN_ES = {
     "because":"porque","if":"si","although":"aunque","though":"aunque",
     "when":"cuando","where":"donde","while":"mientras","that":"que",
     "which":"cual","who":"quien","than":"que","as":"como",
-    // Puntuación
-    ".":".","!":"!","?":"?",";":";",":":":",",":","
+    "oh":"oh","wow":"vaya","hey":"oye","hi":"hola","hello":"hola","bye":"adiós","yes":"sí","no":"no","ok":"ok","okay":"está bien","ouch":"ay","hmm":"hmm","ah":"ah","oops":"ups","hurray":"hurra","bravo":"bravo","please":"por favor","thanks":"gracias","sorry":"lo siento",
+    ".":".","!":"!","?":"?",";":";",":":":",
 };
 
 
@@ -936,7 +936,7 @@ var DIC_ES_EN = {
     "ese":"that","esa":"that","esos":"those","esas":"those",
     "aquel":"that","aquella":"that",
     // Verbos
-    "es":"is","son":"are","era":"was","eran":"were","ser":"to be","sido":"been",
+    "es":"is","son":"are","somos":"are","sois":"are","era":"was","eran":"were","ser":"to be","sido":"been",
     "estar":"to be","estoy":"am","estás":"are","está":"is","estamos":"are","están":"are",
     "estuvo":"was","estuvieron":"were","fue":"was","fueron":"were",
     "tengo":"have","tienes":"have","tiene":"has","tenemos":"have","tienen":"have",
@@ -1045,10 +1045,9 @@ var DIC_ES_EN = {
     "y":"and","e":"and","pero":"but","o":"or","u":"or","ni":"nor",
     "porque":"because","si":"if","aunque":"although","cuando":"when",
     "donde":"where","mientras":"while","que":"that","como":"as","pues":"so",
-    // Contracciones
     "al":"to the","del":"of the",
-    // Puntuación
-    ".":".","!":"!","?":"?",";":";",":":":",",":","
+    "oh":"oh","ay":"ouch","eh":"hey","ah":"ah","oye":"hey","hola":"hello","adiós":"goodbye","ok":"ok","uy":"oops","vaya":"wow","caramba":"wow","bravo":"bravo","hurra":"hurray","por favor":"please","gracias":"thanks","perdón":"sorry","disculpa":"excuse me",
+    ".":".","!":"!","?":"?",";":";",":":":",
 };
 
 
@@ -1071,4 +1070,82 @@ function generarTraduccion(tokens, direccion) {
     });
 
     return resultado.trim();
+}
+
+// ══════════════════════════════════════════════════════
+//  SECCIÓN 11 — RECONOCIMIENTO DE VOZ
+//  Usa la Web Speech API (funciona en Chrome y Edge).
+//  El idioma se detecta automáticamente según la
+//  dirección de traducción seleccionada.
+// ══════════════════════════════════════════════════════
+
+var reconocimiento = null;
+var vozActiva      = false;
+
+function toggleVoz() {
+    if (vozActiva) {
+        detenerVoz();
+    } else {
+        iniciarVoz();
+    }
+}
+
+function iniciarVoz() {
+    // Verifica que el navegador soporte la Web Speech API
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        mostrarToast('Tu navegador no soporta reconocimiento de voz. Usa Chrome.');
+        return;
+    }
+
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    reconocimiento = new SpeechRecognition();
+
+    // Idioma automático según la dirección seleccionada
+    reconocimiento.lang = (direccionActual === 'en-es') ? 'en-US' : 'es-ES';
+
+    reconocimiento.continuous     = false; // una sola frase por vez
+    reconocimiento.interimResults = false; // solo resultado final
+
+    // Cuando detecta texto
+    reconocimiento.onresult = function(event) {
+        var texto = event.results[0][0].transcript;
+        document.getElementById('inputText').value = texto;
+        manejarEntrada();
+        mostrarToast('Voz transcrita: "' + texto + '"');
+        detenerVoz();
+    };
+
+    // Cuando termina de escuchar
+    reconocimiento.onend = function() {
+        detenerVoz();
+    };
+
+    // Si hay un error
+    reconocimiento.onerror = function(event) {
+        if (event.error === 'no-speech') {
+            mostrarToast('No se detectó voz. Intenta de nuevo.');
+        } else if (event.error === 'not-allowed') {
+            mostrarToast('Permiso de micrófono denegado.');
+        } else {
+            mostrarToast('Error de voz: ' + event.error);
+        }
+        detenerVoz();
+    };
+
+    reconocimiento.start();
+    vozActiva = true;
+
+    // Activa la animación del botón
+    document.getElementById('btnMic').classList.add('escuchando');
+    var idioma = (direccionActual === 'en-es') ? 'inglés' : 'español';
+    mostrarToast('Escuchando en ' + idioma + '...');
+}
+
+function detenerVoz() {
+    if (reconocimiento) {
+        reconocimiento.stop();
+        reconocimiento = null;
+    }
+    vozActiva = false;
+    document.getElementById('btnMic').classList.remove('escuchando');
 }

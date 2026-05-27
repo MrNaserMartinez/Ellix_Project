@@ -344,7 +344,7 @@ public class Diccionarioespanol {
         );
     }
 
-    // ── Reconoce plurales regulares de sustantivos en español, para manejo de palabras plurales en español
+    // ── Reconoce plurales regulares de sustantivos en español ──
     public boolean esSustantivoPlural(String p) {
         if (p.endsWith("es") && esSustantivo(p.substring(0, p.length() - 2))) return true;
         if (p.endsWith("s")  && esSustantivo(p.substring(0, p.length() - 1))) return true;

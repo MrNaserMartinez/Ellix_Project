@@ -9,6 +9,7 @@
 </head>
 <body>
 
+<!-- ── CABECERA ── -->
 <header class="header">
     <div class="header-left">
         <span class="logo-icon">⬡</span>
@@ -20,6 +21,9 @@
             <button class="lang-btn active" id="btn-en-es" onclick="setDirection('en-es')">EN → ES</button>
             <button class="lang-btn" id="btn-es-en" onclick="setDirection('es-en')">ES → EN</button>
         </div>
+        <button class="btn-mic" id="btnMic" onclick="toggleVoz()" title="Reconocimiento de voz">
+            🎤
+        </button>
         <button class="btn-load" onclick="document.getElementById('fileInput').click()">
             ⬆ Cargar .txt
         </button>
@@ -27,8 +31,10 @@
     </div>
 </header>
 
+<!-- ── ÁREA PRINCIPAL: DOS PANELES ── -->
 <main class="main-area">
 
+    <!-- Panel Izquierdo: Entrada -->
     <section class="panel panel-input">
         <div class="panel-header">
             <span class="panel-label" id="label-input">Inglés</span>
@@ -49,12 +55,14 @@
         </div>
     </section>
 
+    <!-- Divisor central -->
     <div class="divider">
         <div class="divider-line"></div>
         <span class="divider-icon">⇄</span>
         <div class="divider-line"></div>
     </div>
 
+    <!-- Panel Derecho: Traducción -->
     <section class="panel panel-output">
         <div class="panel-header">
             <span class="panel-label" id="label-output">Español</span>
@@ -72,14 +80,17 @@
 
 </main>
 
+<!-- ── SECCIÓN DE TABLAS ── -->
 <section class="tables-section" id="tablesSection" style="display:none">
 
+    <!-- Tabs: Tokens | Árbol | Errores -->
     <div class="tabs">
         <button class="tab active" onclick="mostrarTab('tokens')">Tabla de Tokens</button>
         <button class="tab"        onclick="mostrarTab('arbol')">Árbol de Derivación</button>
         <button class="tab"        onclick="mostrarTab('errores')">Tabla de Errores</button>
     </div>
 
+    <!-- Tabla de Tokens -->
     <div id="tab-tokens" class="tab-content">
         <table class="data-table">
             <thead>
@@ -96,10 +107,12 @@
         </table>
     </div>
 
+    <!-- Árbol de Derivación -->
     <div id="tab-arbol" class="tab-content" style="display:none">
         <div id="arbolContainer" class="arbol-container"></div>
     </div>
 
+    <!-- Tabla de Errores Unificada -->
     <div id="tab-errores" class="tab-content" style="display:none">
         <table class="data-table">
             <thead>
@@ -115,8 +128,12 @@
             <tbody id="erroresBody"></tbody>
         </table>
     </div>
+
 </section>
+
+<!-- ── NOTIFICACIÓN TOAST ── -->
 <div class="toast" id="toast"></div>
+
 <script src="app.js"></script>
 </body>
 </html>
