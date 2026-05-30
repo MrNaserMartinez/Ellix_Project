@@ -143,10 +143,6 @@ function analizarTexto() {
         return;
     }
 
-    // Árbol de derivación
-    var arbol = construirArbol(resLexico.tokens);
-    renderizarArbol(arbol);
-
     // Fase 3: Semántico
     const resSemantico = analizarSemantico(resLexico.tokens, direccionActual);
 
@@ -159,6 +155,10 @@ function analizarTexto() {
         mostrarTab('errores');
         return;
     }
+
+    // Árbol de derivación — solo si los 3 análisis fueron exitosos
+    var arbol = construirArbol(resLexico.tokens);
+    renderizarArbol(arbol);
 
     actualizarStatus('Sin errores', 'ok');
     // Síntesis: genera la traducción real palabra por palabra
